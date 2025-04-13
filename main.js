@@ -137,7 +137,7 @@ function preload() {
     // Load all graphics before running rest of code
 
     // Load background/constant images
-    bkgd_img = loadImage('Images/Backgrounds/bkgd.png'); // window background image
+    //bkgd_img = loadImage('Images/Backgrounds/bkgd.png'); // window background image -> not currently used
     death_img = loadImage('Images/Death/death.png');     // death image
     title_img_dark = loadImage('Images/Title/title_dark.png'); // title screen image
     title_img_light = loadImage('Images/Title/title_light.png'); // " "
@@ -265,8 +265,10 @@ function draw() {
         title_screen();
     }
     else if(chpt==1){ // settings
+        settings();
     }
     else if(chpt==2){ // credits/about
+        credits();
     }
     else if(chpt==3){  // character selection
         player_base_stats = roles[player_role];
@@ -350,6 +352,8 @@ function color_pallette(){
     stats_color = ['#821621','#204a99','#155e2d','#abad32', '#7133b8']; // [health, strength, wisdom, gold, inventory] stat colors
 
 }
+
+
 
 function title_screen(){
     // Displays title screen and allows selection of menu options
@@ -478,6 +482,92 @@ function title_screen(){
     }
     text('Credits', pw/2, button_bounds[2]-3);
 
+
+}
+
+function settings(){
+    // Set all game settings/options
+
+    // General parameters
+    var button_bounds = [pw/2-80, pw/2+80, ph/2-15, ph/2+35]; // xmin, xmax, ymin, max
+
+    // Background
+    fill(title_bkgd); noStroke(); rect(0,0,pw,ph); // background behind image
+
+    // Return to title screen 
+    let inst_x = pw-3;
+    let inst_y = 195 + txt_sz*10.2;
+    fill(txt_color);
+    if(mouse_state[1]==1){ 
+        if(mx < button_bounds[0] || mx > button_bounds[1] || my < button_bounds[2] || my > button_bounds[3]) { // outside button hitbox
+            fill(console_border); // change instruction text when mouse is pressed outside hitbox
+        }
+    } 
+    else { 
+        fill(txt_color); 
+    }
+    textSize(txt_sz); textAlign(RIGHT, BASELINE); textFont(main_txt_font);
+    text("Tap anywhere to return to title screen", inst_x, inst_y);
+
+    // Setup
+    //fill(255,100,100); noStroke(); 
+    //rect(button_bounds[0], button_bounds[2], button_bounds[1]-button_bounds[0], button_bounds[3]-button_bounds[2]); // show hitbox for debugging
+    textSize(25); textAlign(CENTER, CENTER); textFont(main_txt_font);
+    fill(txt_color); noStroke();
+
+    // Button Controls 
+    if(mx >= button_bounds[0] && mx <= button_bounds[1] && my >= button_bounds[2] && my <= button_bounds[3]){ // inside hitbox
+        fill(console_border); // change color on highlight
+        if(mouse_state[0] == 1 && mouse_state[1] == 0) { // mouse was just released
+            // switch color mode
+            if(color_mode == 'light'){ color_mode = 'dark';}
+            else if(color_mode == 'dark'){ color_mode = 'light';}
+        }
+    } else { // outside hitbox
+        if(mouse_state[0] == 1 && mouse_state[1] == 0) { // mouse was just released
+            chpt = 0; 
+        }
+    }
+
+    // Color mode text
+    if(color_mode == 'light'){
+        text('Light Mode', pw/2, ph/2);
+    } 
+    if(color_mode == 'dark'){
+        text('Dark Mode', pw/2, ph/2);
+    }
+    textSize(10); 
+    if(color_mode == 'light'){
+        text('Tap to switch to DARK MODE', pw/2, ph/2+20);
+    } 
+    if(color_mode == 'dark'){
+        text('Tap to switch to LIGHT MODE', pw/2, ph/2+20);
+    }
+
+}
+
+function credits(){
+    // Credits screen
+
+    // Background
+    fill(title_bkgd); noStroke(); rect(0,0,pw,ph); // background behind image
+
+    // Text
+    var credits_txt = 'Aliquam efficitur auctor sapien non congue. Quisque eu ornare dui. Ut suscipit, dolor vel accumsan laoreet, tortor tortor laoreet tellus, in bibendum felis ligula eu diam. Cras ultrices feugiat urna sed tempor. Integer elementum commodo massa nec ultrices. Vestibulum vitae vestibulum tellus. Cras sed rhoncus ipsum, vitae maximus elit. Nunc vitae mauris non justo pretium semper vitae quis augue. Suspendisse at placerat nunc, vitae aliquet arcu. Vivamus non ligula nec justo imperdiet condimentum sed a odio. Pellentesque ullamcorper faucibus lacus sed sollicitudin. Curabitur non purus porttitor, semper nisl condimentum, luctus felis.';
+    textSize(txt_sz); textAlign(LEFT, BASELINE); textFont(main_txt_font);
+    fill(txt_color); noStroke();
+    text(credits_txt, txt_sz/2, txt_y_pos_0, pw-txt_sz, ph-txt_y_pos_0*2);
+
+
+    // Return to title screen
+    textSize(txt_sz); noStroke(); textLeading(txt_sz); textAlign(RIGHT);
+    let inst_x = pw-3;
+    let inst_y = 195 + txt_sz*10.2;
+    if(mouse_state[1]==1){ fill(console_border); } // change instruction text when mouse is pressed
+    else { fill(txt_color); }
+    text("Tap anywhere to return to title screen", inst_x, inst_y);
+
+    if(mouse_state[0]==1 && mouse_state[1]==0){chpt=0;} // return to title screen on mouse release
 
 }
 
