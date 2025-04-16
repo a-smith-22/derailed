@@ -23,21 +23,7 @@ var bkgd_img, death_img, title_img_dark, title_img_light, train_img; // preload 
 var main_txt_font, title_txt_font; 
 
 // Color Pallette
-var color_mode = 'dark';           // toggle between color pallettes
-/*
-const window_bkgd = '#b3d6e6';      // color around screen
-const screen_bkgd = '#d6d9b4';      // game background color
-const title_bkgd = '#d6d9b4';       // title screen background color
-const console_border = '#693c0d';   // border around game console
-const txt_color = '#3b1b08';        // main text and border colors 
-const img_fore = '#3b1b08';         // color to tint image line sketches
-const img_bkgd = '#c4c7a3';         // color behind image
-const opt_bkgd_u = '#d6d9b4';       // bar behind option text (unhighlighted)
-const opt_bkgd_h = '#c4c7a3';       // bar behind option text (highlighted)
-const stats_color = ['#821621','#204a99','#155e2d','#abad32', '#7133b8']; // [health, strength, wisdom, gold, inventory] stat colors
-const car_unpl_color = '#525252';   // color for unplayed cars/chapters for progress bar
-const car_past_color = '#a3a3a3';   // color for past cars/chapters for progress bar
-*/
+var color_mode = 'light';           // toggle between color pallettes
 var window_bkgd, screen_bkgd, title_bkgd, img_bkgd; // background colors
 var console_border;                                 // game border
 var txt_color, img_fore;                            // foreground colors
@@ -47,7 +33,7 @@ var car_unpl_color, car_past_color;                 // progress bar colors
 // Game State
 const num_chpts = 10; // how many chapters to play
 var journey = [];     // list of chapter IDs for player's journey 
-var chpt = 0;        // current chapter, see list below
+var chpt = 0;         // current chapter, see list below
 /*
 0 = menu
 1 = settings
@@ -55,8 +41,9 @@ var chpt = 0;        // current chapter, see list below
 3 = character selection
 10-## = game chapters
 */ 
-var curr_option = 'Null';      // selected option from current chapter, 'A', 'B', or 'Null'
-var option_state = 1; // see list below
+var curr_option = 'Null';   // selected option from current chapter, 'A', 'B', or 'Null'
+var option_state = 1;       // see list below
+var death_stat = 'Null';    // which stat causes game over
 /*
 0 = null
 1 = select option (during game)
@@ -73,15 +60,16 @@ var option_state = 1; // see list below
 var num_options;        // number of options in current chapter, 1 (A only) or 2 (A and B)
 var chpt_images = [];   // all chapter images
 var item_images = [];   // all item images
+var role_images = [];   // all character images
 
 // Player stats
-var player_role = 3; // index of player role to use
+var player_role = 0; // index of player role to use (default is id = 0)
 const roles = [
-    {role: 'Prospector', health: 9,     strength: 6,    wisdom: 2,  gold: 8,    inventory_size: 3},
-    {role: 'Outlaw',     health: 11,    strength: 9,    wisdom: 1,  gold: 2,    inventory_size: 3},
-    {role: 'Lawyer',     health: 10,    strength: 1,    wisdom: 8,  gold: 6,    inventory_size: 4},
-    {role: 'Banker',     health: 7,     strength: 3,    wisdom: 7,  gold: 12,   inventory_size: 3},
-    {role: 'Barkeep',    health: 12,    strength: 5,    wisdom: 4,  gold: 8,    inventory_size: 4},
+    {role: 'Prospector', health: 9,  strength: 6,  wisdom: 2,  gold: 8,  inventory_size: 3, img: 'test.png', description: ''},
+    {role: 'Outlaw',     health: 11, strength: 9,  wisdom: 1,  gold: 2,  inventory_size: 3, img: 'test.png', description: ''},
+    {role: 'Lawyer',     health: 10, strength: 1,  wisdom: 8,  gold: 6,  inventory_size: 4, img: 'test.png', description: ''},
+    {role: 'Banker',     health: 7,  strength: 3,  wisdom: 7,  gold: 12, inventory_size: 3, img: 'test.png', description: ''},
+    {role: 'Barkeep',    health: 12, strength: 5,  wisdom: 4,  gold: 3,  inventory_size: 4, img: 'test.png', description: ''},
 ]; 
 var player_base_stats = {role: 'Default', health: 0, strength: 0, wisdom: 0, gold: 0, inventory_size: 0};   // base stats        -> based on role selected
 var player_item_stats = {role: 'Default', health: 0, strength: 0, wisdom: 0, gold: 0, inventory_size: 0};   // item stats        -> change of player stats due to inventory items
@@ -98,10 +86,14 @@ const txt_y_pos_0 = 10;             // first stat y pos
 // Player inventory
 var inventory = [-1,-1,-1,-1]; // player inventory, -1 = empty slot, # = item ID
 const items = [
-    {name: 'revolver', health: 0, strength: 3, wisdom: 0, gold: 0, img:'test.png'},
-    {name: 'beer', health: 3, strength: 0, wisdom: -2, gold: 0, img:'test.png'},
-    {name: 'dagger', health: 0, strength: 2, wisdom: 0, gold: 0, img:'test.png'},
-    {name: 'pistol', health: 0, strength: 3, wisdom: 0, gold: 0, img:'test.png'}
+    {id: 0, name: 'revolver', health: 0, strength: 3, wisdom: 0, gold: 0, img:'test.png'},
+    {id: 1, name: 'beer', health: 3, strength: 0, wisdom: -2, gold: 0, img:'test.png'},
+    {id: 2, name: 'dagger', health: 0, strength: 2, wisdom: 0, gold: 0, img:'test.png'},
+    {id: 3, name: 'pistol', health: 0, strength: 3, wisdom: 0, gold: 0, img:'test.png'},
+    {id: 4, name: 'hat', health: 2, strength: 0, wisdom: 0, gold: 0, img:'test.png'},
+    {id: 5, name: 'glasses', health: 1, strength: 0, wisdom: 1, gold: 0, img:'test.png'},
+    {id: 6, name: 'book', health: 0, strength: 0, wisdom: 3, gold: 0, img:'test.png'},
+
 ] // all collectible items
 const inventory_xpos = 153; // px position to start inventory boxes
 const inventory_ypos = 24; // " "
@@ -150,6 +142,9 @@ function preload() {
     for(let i=0; i<items.length; i++){ 
         append(item_images, loadImage('Images/Items/'+items[i].img)); // load each item image
     }
+    for(let i=0; i<roles.length; i++){ 
+        append(role_images, loadImage('Images/Characters/'+roles[i].img)); // load each character image
+    }
 
     // Load fonts
     main_txt_font = loadFont('Fonts/Tiny5-Regular.ttf'); // used for GUI, chapter prompts,chapter options, etc.
@@ -166,10 +161,12 @@ function setup() {
     create_canvas();
     set_scale(); 
 
-    // Determine device type
+    // Determine device type -> not currently used
+    /*
     let details = navigator.userAgent;
     let regexp = /android|iphone|kindle|ipad/i;
     isMobile = regexp.test(details);
+    */
 
     // Prevent roles from changing
     for(let i=0; i<roles.length; i++){
@@ -271,8 +268,7 @@ function draw() {
         credits();
     }
     else if(chpt==3){  // character selection
-        player_base_stats = roles[player_role];
-        chpt = 10; 
+        character_selection();
     } 
     else if(chpt>=10){ // play levels
         draw_screen_bkgd();
@@ -351,6 +347,21 @@ function color_pallette(){
     // Constant colors
     stats_color = ['#821621','#204a99','#155e2d','#abad32', '#7133b8']; // [health, strength, wisdom, gold, inventory] stat colors
 
+    // Previous color pallette (used for reference)
+    /*
+    const window_bkgd = '#b3d6e6';      // color around screen
+    const screen_bkgd = '#d6d9b4';      // game background color
+    const title_bkgd = '#d6d9b4';       // title screen background color
+    const console_border = '#693c0d';   // border around game console
+    const txt_color = '#3b1b08';        // main text and border colors 
+    const img_fore = '#3b1b08';         // color to tint image line sketches
+    const img_bkgd = '#c4c7a3';         // color behind image
+    const opt_bkgd_u = '#d6d9b4';       // bar behind option text (unhighlighted)
+    const opt_bkgd_h = '#c4c7a3';       // bar behind option text (highlighted)
+    const stats_color = ['#821621','#204a99','#155e2d','#abad32', '#7133b8']; // [health, strength, wisdom, gold, inventory] stat colors
+    const car_unpl_color = '#525252';   // color for unplayed cars/chapters for progress bar
+    const car_past_color = '#a3a3a3';   // color for past cars/chapters for progress bar
+    */
 }
 
 
@@ -424,8 +435,6 @@ function title_screen(){
     // Show train image
     tint(img_fore); noFill(); noStroke();
     image(train_img,0,0,pw,ph);
-
-    print(chpt);
 
 
     // Play button
@@ -553,7 +562,12 @@ function credits(){
     fill(title_bkgd); noStroke(); rect(0,0,pw,ph); // background behind image
 
     // Text
-    var credits_txt = 'Aliquam efficitur auctor sapien non congue. Quisque eu ornare dui. Ut suscipit, dolor vel accumsan laoreet, tortor tortor laoreet tellus, in bibendum felis ligula eu diam. Cras ultrices feugiat urna sed tempor. Integer elementum commodo massa nec ultrices. Vestibulum vitae vestibulum tellus. Cras sed rhoncus ipsum, vitae maximus elit. Nunc vitae mauris non justo pretium semper vitae quis augue. Suspendisse at placerat nunc, vitae aliquet arcu. Vivamus non ligula nec justo imperdiet condimentum sed a odio. Pellentesque ullamcorper faucibus lacus sed sollicitudin. Curabitur non purus porttitor, semper nisl condimentum, luctus felis.';
+    var credits_txt = '';
+    credits_txt += 'Derailed is a retro arcade-inspired dungeon crawler set in the wild west. The chapter-based adventure format was inspired by "Escape the Dark Castle," a tabletop card game from Themeborne Ltd. This game was designed using the p5js JavaScript library; visit p5js.org for more information.';
+    credits_txt += '\n\n';
+    credits_txt += 'All game code, sprites, and artwork were created by Andrew Smith (2025). The title logo design uses a modified version of the "Cottonwood" font, designed by Barbara Lind, Joy Redick, and Kim Buker Chansler from the Adobe Originals font collection from Adobe. The title screen menu options use the "Sancreek" font, designed by vernon adams (C) 2011. All text shown otherwise uses the "Tiny5" font designed by Stefan Schmidt (C) 2024.';
+    credits_txt += '\n\n';
+    credits_txt += 'This game is licensed under CC BY 4.0 Creative Commons Attribution 4.0 International. Others may distribute, remix, adapt, and build upon the material in any medium or format, even for commercial purposes with credit given to Andrew Smith. Visit https://creativecommons.org/licenses/by/4.0/ for more information.';
     textSize(txt_sz); textAlign(LEFT, BASELINE); textFont(main_txt_font);
     fill(txt_color); noStroke();
     text(credits_txt, txt_sz/2, txt_y_pos_0, pw-txt_sz, ph-txt_y_pos_0*2);
@@ -569,6 +583,123 @@ function credits(){
 
     if(mouse_state[0]==1 && mouse_state[1]==0){chpt=0;} // return to title screen on mouse release
 
+}
+
+function character_selection(){
+    // Allow for role/character selection before starting game
+
+    // Background
+    fill(title_bkgd); noStroke(); rect(0,0,pw,ph); // background behind image
+
+    // Instructions
+    textSize(txt_sz); noStroke(); textLeading(txt_sz); textAlign(RIGHT, BASELINE); textFont(main_txt_font);
+    var inst_x = pw-3;
+    var inst_y = 195 + txt_sz*10.2;
+    if(mouse_state[1]==1){ fill(console_border); } // change instruction text when mouse is pressed
+    else { fill(txt_color); }
+    text("Tap to select role and begin", inst_x, inst_y);
+
+    if(mouse_state[0]==1 && mouse_state[1]==0){chpt=10;} // begin game on mouse release
+
+    // Calculate difficulty
+    var role_stat_sums = []; 
+    var role_difficulties = []; 
+    // get min/max stat sums
+    for(let i=0; i<roles.length; i++){
+        var a = roles[i];
+        var sum = 1.0*a.health + 1.2*a.strength + 1.0*a.wisdom + 0.6*a.gold + 3.0*a.inventory_size; // assume difficulty is proportional to linear combination of stats, highest to lowest weight: inventory, strength, health, wisdom, gold
+        role_stat_sums = append(role_stat_sums, sum); 
+    }
+    var min_sum_stats = min(role_stat_sums); // set bounds for difficulties
+    var max_sum_stats = max(role_stat_sums); 
+    // assign difficulty to each role based on above stat sums
+    for(let i=0; i<roles.length; i++){
+        role_difficulties = append(role_difficulties, round( map(role_stat_sums[i], min_sum_stats, max_sum_stats, 5, 0) ) ); 
+    }
+
+    // Display each character and stats
+    var box_sp = 4; // gap between role boxes
+    var box_ht = (inst_y-txt_sz*1.1)/roles.length - box_sp; // height of each role box
+    for(let i=0; i<roles.length; i++){
+        // Setup variables
+        var curr = roles[i]; // current role
+        var bounds = [box_sp, pw-box_sp, (box_ht+box_sp)*i+box_sp, (box_ht+box_sp)*i+box_sp+box_ht]; // xmin, xmax, ymin, ymax
+
+        // Hit box
+        if(mx >= bounds[0] && mx <= bounds[1] && my >= bounds[2] && my <= bounds[3]){
+            stroke(console_border); fill(opt_bkgd_h);   // fill in box when pressed
+            if(mouse_state[0]==1 && mouse_state[1]==0){ // mouse was just released
+                player_role = i;                        // set player role
+                player_base_stats = roles[player_role]; // set player base stats
+                chpt = 10;                              // begin game
+            }
+        }
+        else {
+            stroke(img_fore); fill(title_bkgd);
+        }
+
+        // Border
+        strokeWeight(1);
+        rect(bounds[0], bounds[2], bounds[1]-bounds[0], bounds[3]-bounds[2], 2);
+
+        // Display image
+        let img_x = bounds[0] + box_ht*0.1; 
+        let img_y = bounds[2] + box_ht*0.1; 
+        let img_w = box_ht * 0.8; 
+        noFill(); strokeWeight(1); stroke(img_fore);
+        rect(img_x, img_y, img_w, img_w, 1); // image border
+        tint(img_fore); noFill(); noStroke();
+        image(role_images[i], img_x, img_y, img_w, img_w);
+
+        // Column 1 -> name, description, inventory
+        textSize(txt_sz); fill(img_fore); noStroke(); textLeading(txt_sz); textAlign(LEFT, CENTER); textFont(main_txt_font);
+        var txt_x_pos = [2*img_x + img_w, 2*img_x + img_w + txt_sz*4.5, bounds[1]-txt_sz*14.0, bounds[1]-txt_sz*14.0 + txt_sz*4.5]; // column 1a (variable), 1b (value), 2a (variable), 1b (value) x-positions
+        var txt_y_pos = [bounds[2]+box_ht*0.2, bounds[2]+box_ht*0.4, bounds[2]+box_ht*0.6, bounds[2]+box_ht*0.8]; // y-position of text lines
+        text('Role:', txt_x_pos[0], txt_y_pos[0]);
+        text(curr.role, txt_x_pos[1], txt_y_pos[0]);
+        text(curr.description, txt_x_pos[0], txt_y_pos[1]);
+        text('Inventory:', txt_x_pos[0], txt_y_pos[2]);
+        text(curr.inventory_size, txt_x_pos[1], txt_y_pos[2]);
+        text('Difficulty:', txt_x_pos[0], txt_y_pos[3]);
+
+        // Column 1 -> difficulty
+        let diff_box_wd = 4; // width of each stat box
+        let diff_box_sp = diff_box_wd/2; // spacing between stat boxes
+        for(let j=0; j<5; j++){
+            if(role_difficulties[i] >= (j+1)){
+                fill(img_fore);
+            } else {
+                noFill();
+            }
+            stroke(img_fore); strokeWeight(1); 
+            rect(txt_x_pos[1] + (diff_box_wd + diff_box_sp)*j, txt_y_pos[3]-diff_box_wd/2+txt_sz*0.15, diff_box_wd, diff_box_wd);
+        }
+
+        // Column 2 -> stats
+        textSize(txt_sz); fill(img_fore); noStroke(); textLeading(txt_sz); textAlign(LEFT, CENTER); textFont(main_txt_font);
+        text('Health:', txt_x_pos[2], txt_y_pos[0]);
+        text('Strength:', txt_x_pos[2], txt_y_pos[1]);
+        text('Wisdom:', txt_x_pos[2], txt_y_pos[2]);
+        text('Gold:', txt_x_pos[2], txt_y_pos[3]);
+        for(let j=0; j<curr.health; j++){
+            fill(stats_color[0]); noStroke();
+            rect(txt_x_pos[3] + (diff_box_wd + diff_box_sp)*j, txt_y_pos[0]-diff_box_wd/2+txt_sz*0.15, diff_box_wd, diff_box_wd);
+        }
+        for(let j=0; j<curr.strength; j++){
+            fill(stats_color[1]); noStroke();
+            rect(txt_x_pos[3] + (diff_box_wd + diff_box_sp)*j, txt_y_pos[1]-diff_box_wd/2+txt_sz*0.15, diff_box_wd, diff_box_wd);
+        }
+        for(let j=0; j<curr.wisdom; j++){
+            fill(stats_color[2]); noStroke();
+            rect(txt_x_pos[3] + (diff_box_wd + diff_box_sp)*j, txt_y_pos[2]-diff_box_wd/2+txt_sz*0.15, diff_box_wd, diff_box_wd);
+        }
+        for(let j=0; j<curr.gold; j++){
+            fill(stats_color[3]); noStroke();
+            rect(txt_x_pos[3] + (diff_box_wd + diff_box_sp)*j, txt_y_pos[3]-diff_box_wd/2+txt_sz*0.15, diff_box_wd, diff_box_wd);
+        }
+
+
+    }
 }
 
 
@@ -589,7 +720,7 @@ function update_cursor(){
     // Update cursor position
     mx = (mouseX / scl) - (w_win-pw*scl)/(2*scl); // Scale and translate cursor position
     my = (mouseY / scl) - (h_win-ph*scl)/(2*scl); // " "
-    fill('#FF0000'); noStroke(); ellipse(mx, my, 10, 10); // Sow cursor position (for debugging)
+    //fill('#FF0000'); noStroke(); ellipse(mx, my, 10, 10); // Sow cursor position (for debugging)
 }
 
 
@@ -802,12 +933,16 @@ function dsp_chpt() {
             if(item.gold>0){ option_a_text += "+" + abs(item.gold) + " GOLD"; } if(item.gold<0){ option_a_text += "-" + abs(item.gold) + " GOLD"; }
         }
         else if(num_non_zeroes == 2){ // 2 stat changes -> display positive change first
+            /*
+            Go through item stats and find minimum stat change and maximum stat change to display ITEM (+/- MAX STAT CHANGE, +/- MIN STAT CHANGE)
+            If the two are equal, then choose the second appearing one to be first; e.g., ITEM (+1 WISDOM, +1 HEALTH)
+            */
             let stat_max = -99; let stat_min = 99; 
             let first_stat = " "; let second_stat = " ";
-            if(item.health>stat_max && item.health!=0){ stat_max = item.health; first_stat = "HEALTH"; }            if(item.health<stat_min && item.health!=0){ stat_min = item.health; second_stat = "HEALTH"; } 
-            if(item.strength>stat_max && item.strength!=0){ stat_max = item.strength; first_stat = "STRENGTH"; }    if(item.strength<stat_min && item.strength!=0){ stat_min = item.strength; second_stat = "STRENGTH"; } 
-            if(item.wisdom>stat_max && item.wisdom!=0){ stat_max = item.wisdom; first_stat = "WISDOM"; }            if(item.wisdom<stat_min && item.wisdom!=0){ stat_min = item.wisdom; second_stat = "WISDOM"; } 
-            if(item.gold>stat_max && item.gold!=0){ stat_max = item.gold; first_stat = "GOLD"; }                    if(item.gold<stat_min && item.gold!=0){ stat_min = item.gold; second_stat = "GOLD"; } 
+            if(item.health>stat_max && item.health!=0){ stat_max = item.health; first_stat = "HEALTH"; }            if(item.health<stat_min && item.health!=0){ stat_min = item.health; second_stat = "HEALTH"; }                       
+            if(item.strength>stat_max && item.strength!=0){ stat_max = item.strength; first_stat = "STRENGTH"; }    if(item.strength<stat_min && item.strength!=0){ stat_min = item.strength; second_stat = "STRENGTH"; }   if(item.strength==stat_max){ stat_max = item.strength; second_stat = "STRENGTH"; }
+            if(item.wisdom>stat_max && item.wisdom!=0){ stat_max = item.wisdom; first_stat = "WISDOM"; }            if(item.wisdom<stat_min && item.wisdom!=0){ stat_min = item.wisdom; second_stat = "WISDOM"; }           if(item.wisdom==stat_max){ stat_max = item.wisdom; second_stat = "WISDOM"; }
+            if(item.gold>stat_max && item.gold!=0){ stat_max = item.gold; first_stat = "GOLD"; }                    if(item.gold<stat_min && item.gold!=0){ stat_min = item.gold; second_stat = "GOLD"; }                   if(item.gold==stat_max){ stat_max = item.gold; second_stat = "GOLD"; }
 
             if(stat_max>0 && stat_min>0){ option_a_text += "+" + abs(stat_max) + " " + first_stat + "/" + "+" + abs(stat_min) + " " + second_stat; }
             if(stat_max>0 && stat_min<0){ option_a_text += "+" + abs(stat_max) + " " + first_stat + "/" + "-" + abs(stat_min) + " " + second_stat; }
@@ -861,12 +996,16 @@ function dsp_chpt() {
             if(item.gold>0){ option_b_text += "+" + abs(item.gold) + " GOLD"; } if(item.gold<0){ option_b_text += "-" + abs(item.gold) + " GOLD"; }
         }
         else if(num_non_zeroes == 2){ // 2 stat changes -> display positive change first
+            /*
+            Go through item stats and find minimum stat change and maximum stat change to display ITEM (+/- MAX STAT CHANGE, +/- MIN STAT CHANGE)
+            If the two are equal, then choose the second appearing one to be first; e.g., ITEM (+1 WISDOM, +1 HEALTH)
+            */
             let stat_max = -99; let stat_min = 99; 
             let first_stat = " "; let second_stat = " ";
-            if(item.health>stat_max && item.health!=0){ stat_max = item.health; first_stat = "HEALTH"; }            if(item.health<stat_min && item.health!=0){ stat_min = item.health; second_stat = "HEALTH"; } 
-            if(item.strength>stat_max && item.strength!=0){ stat_max = item.strength; first_stat = "STRENGTH"; }    if(item.strength<stat_min && item.strength!=0){ stat_min = item.strength; second_stat = "STRENGTH"; } 
-            if(item.wisdom>stat_max && item.wisdom!=0){ stat_max = item.wisdom; first_stat = "WISDOM"; }            if(item.wisdom<stat_min && item.wisdom!=0){ stat_min = item.wisdom; second_stat = "WISDOM"; } 
-            if(item.gold>stat_max && item.gold!=0){ stat_max = item.gold; first_stat = "GOLD"; }                    if(item.gold<stat_min && item.gold!=0){ stat_min = item.gold; second_stat = "GOLD"; } 
+            if(item.health>stat_max && item.health!=0){ stat_max = item.health; first_stat = "HEALTH"; }            if(item.health<stat_min && item.health!=0){ stat_min = item.health; second_stat = "HEALTH"; }                       
+            if(item.strength>stat_max && item.strength!=0){ stat_max = item.strength; first_stat = "STRENGTH"; }    if(item.strength<stat_min && item.strength!=0){ stat_min = item.strength; second_stat = "STRENGTH"; }   if(item.strength==stat_max){ stat_max = item.strength; second_stat = "STRENGTH"; }
+            if(item.wisdom>stat_max && item.wisdom!=0){ stat_max = item.wisdom; first_stat = "WISDOM"; }            if(item.wisdom<stat_min && item.wisdom!=0){ stat_min = item.wisdom; second_stat = "WISDOM"; }           if(item.wisdom==stat_max){ stat_max = item.wisdom; second_stat = "WISDOM"; }
+            if(item.gold>stat_max && item.gold!=0){ stat_max = item.gold; first_stat = "GOLD"; }                    if(item.gold<stat_min && item.gold!=0){ stat_min = item.gold; second_stat = "GOLD"; }                   if(item.gold==stat_max){ stat_max = item.gold; second_stat = "GOLD"; }
 
             if(stat_max>0 && stat_min>0){ option_b_text += "+" + abs(stat_max) + " " + first_stat + "/" + "+" + abs(stat_min) + " " + second_stat; }
             if(stat_max>0 && stat_min<0){ option_b_text += "+" + abs(stat_max) + " " + first_stat + "/" + "-" + abs(stat_min) + " " + second_stat; }
@@ -1210,7 +1349,7 @@ function dsp_chpt_2(){
     textFont(main_txt_font);
 
     // Cover block parameters
-    var cover_y_pos = -ph; // rectangle to block text
+    var cover_y_pos = -2*ph; // rectangle to block text
     var cover_y_ht  = txt_sz*3.5; // " "
     var txt_line_y = [-ph,-ph,-ph]; // position of each line of text
     var txt_line_x = [txt_sz/2,txt_sz/2,txt_sz/2]; // " "
@@ -1296,10 +1435,25 @@ function dsp_chpt_2(){
         fill(screen_bkgd); noStroke();
         rect(1, prompt_y_pos-txt_sz, pw-2, cover_y_ht*2.95);
 
+        // Determine death message
+        let game_over_text = '';
+        if(death_stat=='Health'){
+            game_over_text = 'GAME OVER. You have died.';
+        }
+        else if(death_stat=='Strength'){
+            game_over_text = 'GAME OVER. You are too weak to carry on.';
+        }
+        else if(death_stat=='Wisdom'){
+            game_over_text = 'GAME OVER. You have succumbed to insanity.';
+        }
+        else if(death_stat=='Gold'){
+            game_over_text = 'GAME OVER. You have went bankrupt.';
+        }
+
         // Display death screen text
         textSize(txt_sz); noStroke(); textLeading(txt_sz); textAlign(LEFT);
-        fill(txt_color);
-        text("YOU have DIED.", 3,  prompt_y_pos,            pw-txt_sz, ph);
+        fill(txt_color);        
+        text(game_over_text, 3,  prompt_y_pos,            pw-txt_sz, ph);
         text(death_messages[0], 3, prompt_y_pos+txt_sz*1.5, pw-txt_sz, ph);
         
         // Return to home screen
@@ -1933,8 +2087,10 @@ function roll(roll_stat, roll_min, roll_max, roll_type){
                 if(curr_option == 'B') { stat_change = curr_chpt.action_b_failure[2]; }
                 var new_stats = [player_curr_stats.health + stat_change[0], player_curr_stats.strength + stat_change[1], player_curr_stats.wisdom + stat_change[2], player_curr_stats.gold + stat_change[3], player_curr_stats.inventory + stat_change[4]]; 
                 if(new_stats[1] < 1 || new_stats[2] < 1 || new_stats[3] < 1 || new_stats[4] < 1){ // if any non-health stat becomes 0
-                    option_state = 8; // continue after unsuccessful combat roll
+                    //option_state = 8; // continue after unsuccessful combat roll
+                    option_state = 5;  // continue after unsuccessful roll -> death screen calculated later
                 }
+                
 
             }
 
@@ -2029,17 +2185,33 @@ function inventory_update(){
     player_curr_stats.gold              = player_modf_stats.gold            + player_accm_stats.gold; 
     player_curr_stats.inventory_size    = player_modf_stats.inventory_size  + player_accm_stats.inventory_size; 
 
-    // Set bounds on non-health stats
-    if(player_curr_stats.strength < 1) { player_curr_stats.strength  = 1; }
-    if(player_curr_stats.wisdom < 1)   { player_curr_stats.wisdom    = 1; }
-    if(player_curr_stats.gold < 1)     { player_curr_stats.gold      = 1; }
+    // Set bounds on stats from accumulated effects
+    if(player_curr_stats.health > 12){ player_curr_stats.health = 12; }
+    if(player_curr_stats.strength > 12){ player_curr_stats.strength = 12; }
+    if(player_curr_stats.wisdom > 12){ player_curr_stats.wisdom = 12; }
+    if(player_curr_stats.gold > 12){ player_curr_stats.gold = 12; }
     if(player_curr_stats.inventory < 1){ player_curr_stats.inventory = 1; }
+    if(player_curr_stats.inventory > 4){ player_curr_stats.inventory = 4; }
 
 
     // Death screen
     if(player_curr_stats.health < 1){
-        option_state=10; // return to title screen
+        option_state=10; // display death screen
+        death_stat = 'Health';
     }
+    else if(player_curr_stats.strength < 1){
+        option_state=10; // display death screen
+        death_stat = 'Strength';
+    }
+    else if(player_curr_stats.wisdom < 1){
+        option_state=10; // display death screen
+        death_stat = 'Wisdom';
+    }
+    else if(player_curr_stats.gold < 1){
+        option_state=10; // display death screen
+        death_stat = 'Gold';
+    }
+
 }
 
 
@@ -2153,16 +2325,142 @@ const chpt_cards = [
     },
     {
         id: 5,
-        type: 'Null', 
-        prompt: 'asdasdasd',
+        type: 'Normal', 
+        prompt: 'Rocks crash into the windows of your car as a gang of stage coach robbers jump through them and quickly surround you. They are heavily armed and have a thirst for blood or gold, whichever comes first.',
         img: 'test.png',
         min_level: 0.00, 
         max_level: 1.00, 
-        action_a_prompt: ['Continue', 'Item', 'Strength', 0, 0, 99, [0,0,0,0,0]],   
+        action_a_prompt: ['Bribe', 'Stat', 'Strength', 0, 0, 99, [0,0,0,-5,0]],   
         action_a_success: ['Stat',0,[0,0,0,0,0],''],  
         action_a_failure: ['Stat',0,[0,0,0,0,0],''], 
-        action_b_prompt: ['Description', 'Roll', 'Strength', 0, 0, 99, [0,0,0,0,0]],     
-        action_b_success: ['Stat',0,[0,0,0,0,0],''],            
-        action_b_failure: ['Stat',0,[0,0,0,0,0],''] 
+        action_b_prompt: ['Fight', 'Roll', 'Strength', 0, 5, 99, [0,0,0,0,0]],     
+        action_b_success: ['Continue',0,[0,0,0,0,0],''],            
+        action_b_failure: ['Stat',0,[-3,0,0,0,0],''] 
+    },
+    {
+        id: 6,
+        type: 'Normal', 
+        prompt: 'You find yourself in a dimly lit car with several strangers hunched over a table of cards. You bump into the table from the darkness and disturb the players, prompting them to force you to join the game for a hand.',
+        img: 'test.png',
+        min_level: 0.00, 
+        max_level: 1.00, 
+        action_a_prompt: ['Bet low', 'Roll', 'Gold', 0, 2, 99, [0,0,0,0,0]],   
+        action_a_success: ['Stat',0,[0,0,0,2,0],''],  
+        action_a_failure: ['Stat',0,[0,0,0,-2,0],''], 
+        action_b_prompt: ['Bet high', 'Roll', 'Gold', 0, 4, 99, [0,0,0,0,0]],     
+        action_b_success: ['Stat',0,[0,0,0,4,0],''],            
+        action_b_failure: ['Stat',0,[0,0,0,-4,0],''] 
+    },
+    {
+        id: 7,
+        type: 'Normal', 
+        prompt: 'A heavy fog hits you as you enter the smoking cabin, disorienting you from the mix of tabacco and opium. You begin to lose sight of the door opposite of you and have to crawl to make your escape.',
+        img: 'test.png',
+        min_level: 0.00, 
+        max_level: 1.00, 
+        action_a_prompt: ['Bet low', 'Combat', 'Wisdom', 4, 2, 99, [0,0,0,0,0]],   
+        action_a_success: ['Continue',0,[0,0,0,2,0],''],  
+        action_a_failure: ['Stat',0,[0,0,-1,0,0],''], 
+        action_b_prompt: ['Bet high', 'None', 'Gold', 0, 4, 99, [0,0,0,0,0]],     
+        action_b_success: ['Stat',0,[0,0,0,4,0],''],            
+        action_b_failure: ['Stat',0,[0,0,0,-4,0],''] 
+    },
+    {
+        id: 8,
+        type: 'Normal', 
+        prompt: 'You enter a car filled with mirrors, a disorienting maze reflecting into your heart and soul. You are soon unable to determine which set of eyes are yours or the mirrors, and which direction leads to the exit.',
+        img: 'test.png',
+        min_level: 0.00, 
+        max_level: 1.00, 
+        action_a_prompt: ['Find exit', 'Combat', 'Wisdom', 5, 2, 99, [0,0,0,0,0]],   
+        action_a_success: ['Continue',0,[0,0,0,0,0],''],  
+        action_a_failure: ['Stat',0,[0,0,-1,0,0],''], 
+        action_b_prompt: ['Break mirrors', 'Combat', 'Strength', 5, 4, 99, [0,0,0,0,0]],     
+        action_b_success: ['Continue',0,[0,0,0,0,0],''],            
+        action_b_failure: ['Stat',0,[0,-1,0,0,0],''] 
+    },
+    {
+        id: 9,
+        type: 'Normal', 
+        prompt: 'The passengers of the train car fall silent as a gunslinger steps across the aisle from you. With anger in their eyes and a hand near their holster, you only have time for one careful shot before escaping.',
+        img: 'test.png',
+        min_level: 0.00, 
+        max_level: 1.00, 
+        action_a_prompt: ['Shoot', 'Roll', 'Strength', 5, 0, 3, [0,0,0,0,0]],   
+        action_a_success: ['Continue',0,[0,0,0,0,0],''],  
+        action_a_failure: ['Stat',0,[-4,0,0,0,0],''], 
+        action_b_prompt: ['Break mirrors', 'None', 'Strength', 5, 4, 99, [0,0,0,0,0]],     
+        action_b_success: ['Continue',0,[0,0,0,0,0],''],            
+        action_b_failure: ['Stat',0,[0,-1,0,0,0],''] 
+    },
+    {
+        id: 10,
+        type: 'Normal', 
+        prompt: 'A line of passengers are waiting in front of a doctor. Someone nearby says to you, \"The doctor says there\'s a cholera outbreak so we\'ll all need to get checked and maybe buy some medicine on board.\"',
+        img: 'test.png',
+        min_level: 0.00, 
+        max_level: 1.00, 
+        action_a_prompt: ['Check-up', 'Roll', 'Health', 5, 4, 99, [0,0,0,0,0]],   
+        action_a_success: ['Continue',0,[0,0,0,0,0],''],  
+        action_a_failure: ['Stat',0,[+1,0,0,-1,0],''], 
+        action_b_prompt: ['None', 'None', 'Strength', 5, 4, 99, [0,0,0,0,0]],     
+        action_b_success: ['Continue',0,[0,0,0,0,0],''],            
+        action_b_failure: ['Stat',0,[0,-1,0,0,0],''] 
+    },
+    {
+        id: 11,
+        type: 'Normal', 
+        prompt: 'All laterns in the car blow out with a chilling gust of wind as three floating bodies of undead soldiers enter. The apparitions slowly turn their heads towards you and reach out in unison with trembling hands.',
+        img: 'test.png',
+        min_level: 0.00, 
+        max_level: 1.00, 
+        action_a_prompt: ['Fight', 'Combat', 'Strength', 9, 4, 99, [0,0,0,0,0]],   
+        action_a_success: ['Continue',0,[0,0,0,0,0],''],  
+        action_a_failure: ['Stat',0,[-1,0,0,0,0],''], 
+        action_b_prompt: ['None', 'None', 'Strength', 5, 4, 99, [0,0,0,0,0]],     
+        action_b_success: ['Continue',0,[0,0,0,0,0],''],            
+        action_b_failure: ['Stat',0,[0,-1,0,0,0],''] 
+    },
+    {
+        id: 12,
+        type: 'Normal', 
+        prompt: 'Steamed vegetables, salted meats, fresh tomatoes, and a pantry full of aromas flood the car as you enter the dining car. You collapse into the closest seat and the chef asks for your order.',
+        img: 'test.png',
+        min_level: 0.00, 
+        max_level: 1.00, 
+        action_a_prompt: ['Chili', 'Stat', 'Health', 9, 4, 99, [+3,0,0,0,0]],   
+        action_a_success: ['Continue',0,[0,0,0,0,0],''],  
+        action_a_failure: ['Stat',0,[-1,0,0,0,0],''], 
+        action_b_prompt: ['Roast', 'Stat', 'Health', 5, 4, 99, [+3,0,0,0,0]],     
+        action_b_success: ['Continue',0,[0,0,0,0,0],''],            
+        action_b_failure: ['Stat',0,[0,-1,0,0,0],''] 
+    },
+    {
+        id: 13,
+        type: 'Normal', 
+        prompt: 'A mourning widow dressed in black drops her suitcase at the sight of you and screams in agony. Grabbing a nearby knife she charges you yelling, \"It\'s you! You\'re the one that killed my husband!\"',
+        img: 'test.png',
+        min_level: 0.00, 
+        max_level: 1.00, 
+        action_a_prompt: ['Disarm her', 'Roll', 'Strength', 9, 5, 99, [0,0,0,0,0]],   
+        action_a_success: ['Continue',0,[0,0,0,0,0],''],  
+        action_a_failure: ['Stat',0,[-2,0,0,0,0],''], 
+        action_b_prompt: ['Talk down', 'Roll', 'Wisdom', 5, 5, 99, [0,0,0,0,0]],     
+        action_b_success: ['Continue',0,[0,0,0,0,0],''],            
+        action_b_failure: ['Stat',0,[-2,0,0,0,0],''] 
+    },
+    {
+        id: 14,
+        type: 'Normal', 
+        prompt: 'You trip over a large suitcase partially blocking the aisle spreading its contents on the floor. Between the scattered clothing you find the stationery, textbooks, and instruments belonging to a history professor.',
+        img: 'test.png',
+        min_level: 0.00, 
+        max_level: 1.00, 
+        action_a_prompt: ['Take glasses', 'Item', 'Strength', 5, 5, 99, [0,0,0,0,0]],   
+        action_a_success: ['None',0,[0,0,0,0,0],''],  
+        action_a_failure: ['None',0,[-2,0,0,0,0],''], 
+        action_b_prompt: ['Take book', 'Item', 'Wisdom', 6, 5, 99, [0,0,0,0,0]],     
+        action_b_success: ['None',0,[0,0,0,0,0],''],            
+        action_b_failure: ['None',0,[-2,0,0,0,0],''] 
     },
 ];
