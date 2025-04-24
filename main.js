@@ -20,6 +20,9 @@ const txt_sz = 8;                       // size of main game text
 const img_wd = 244; const img_ht = 121; // chapter drawing dimensions
 var bkgd_img, death_img, title_img_dark, title_img_light, train_img; // preload image files
 var main_txt_font, title_txt_font; 
+// chapter image:       244 x 121
+// character profiles:  40  x 40
+// item icons:          21  x 21
 
 // Color Pallette
 var color_mode = 'dark';           // toggle between color pallettes
@@ -85,27 +88,27 @@ const txt_y_pos_0 = 10;             // first stat y pos
 // Player inventory
 var inventory = [-1,-1,-1,-1]; // player inventory, -1 = empty slot, # = item ID
 const items = [
-    {id: 0,  name: 'revolver', health: 0, strength: 3, wisdom: 0, gold: 0, img:'test.png'},
-    {id: 1,  name: 'beer', health: 3, strength: 0, wisdom: -2, gold: 0, img:'test.png'},
-    {id: 2,  name: 'dagger', health: 0, strength: 2, wisdom: 0, gold: 0, img:'test.png'},
-    {id: 3,  name: 'pistol', health: 0, strength: 3, wisdom: 0, gold: 0, img:'test.png'},
-    {id: 4,  name: 'hat', health: 2, strength: 0, wisdom: 0, gold: 0, img:'test.png'},
-    {id: 5,  name: 'glasses', health: 1, strength: 0, wisdom: 1, gold: 0, img:'test.png'},
-    {id: 6,  name: 'book', health: 0, strength: 0, wisdom: 3, gold: 0, img:'test.png'},
-    {id: 7,  name: 'rotten apple', health: -2, strength: 0, wisdom: 0, gold: 0, img:'test.png'},
-    {id: 8,  name: 'deed', health: 0, strength: 0, wisdom: 0, gold: -4, img:'test.png'},
-    {id: 9,  name: 'empty', health: 0, strength: 0, wisdom: 0, gold: 0, img:'test.png'},
-    {id: 10, name: 'fire poker', health: 0, strength: 2, wisdom: 0, gold: 0, img:'test.png'},
-    {id: 11, name: 'ice shard', health: 0, strength: 2, wisdom: 0, gold: 0, img:'test.png'},
-    {id: 12, name: 'pearls', health: 0, strength: 0, wisdom: 0, gold: 3, img:'test.png'},
-    {id: 13, name: 'ring', health: 0, strength: 1, wisdom: 0, gold: 2, img:'test.png'},
-    {id: 14, name: 'leather vest', health: 4, strength: 0, wisdom: 0, gold: 0, img:'test.png'},
-    {id: 15, name: 'brass knuckles', health: 0, strength: 2, wisdom: 0, gold: 0, img:'test.png'},
+    {id: 0,  name: 'revolver', health: 0, strength: 3, wisdom: 0, gold: 0, img:'revolver.png'},
+    {id: 1,  name: 'beer', health: 3, strength: 0, wisdom: -2, gold: 0, img:'beer.png'},
+    {id: 2,  name: 'dagger', health: 0, strength: 2, wisdom: 0, gold: 0, img:'dagger.png'},
+    {id: 3,  name: 'pistol', health: 0, strength: 3, wisdom: 0, gold: 0, img:'pistol.png'},
+    {id: 4,  name: 'hat', health: 2, strength: 0, wisdom: 0, gold: 0, img:'hat.png'},
+    {id: 5,  name: 'glasses', health: 1, strength: 0, wisdom: 1, gold: 0, img:'glasses.png'},
+    {id: 6,  name: 'book', health: 0, strength: 0, wisdom: 3, gold: 0, img:'book.png'},
+    {id: 7,  name: 'rotten apple', health: -2, strength: 0, wisdom: 0, gold: 0, img:'apple.png'},
+    {id: 8,  name: 'deed', health: 0, strength: 0, wisdom: 0, gold: -4, img:'deed.png'},
+    {id: 9,  name: 'empty', health: 0, strength: 0, wisdom: 0, gold: 0, img:'empty.png'},
+    {id: 10, name: 'fire poker', health: 0, strength: 2, wisdom: 0, gold: 0, img:'fire_poker.png'},
+    {id: 11, name: 'ice shard', health: 0, strength: 2, wisdom: 0, gold: 0, img:'ice_shard.png'},
+    {id: 12, name: 'pearls', health: 0, strength: 0, wisdom: 0, gold: 3, img:'pearls.png'},
+    {id: 13, name: 'ring', health: 0, strength: 1, wisdom: 0, gold: 2, img:'ring.png'},
+    {id: 14, name: 'leather vest', health: 4, strength: 0, wisdom: 0, gold: 0, img:'vest.png'},
+    {id: 15, name: 'brass knuckles', health: 0, strength: 2, wisdom: 0, gold: 0, img:'knuckles.png'},
 ]; // all collectible items
 const inventory_xpos = 153; // px position to start inventory boxes
-const inventory_ypos = 24; // " "
-const inventory_wd = 21; // px size of each inventory box
-const inventory_sp = 3; // px spacing between inventory boxes
+const inventory_ypos = 24;  // " "
+const inventory_wd = 21;    // px size of each inventory box
+const inventory_sp = 3;     // px spacing between inventory boxes
 
 // Roll parameters
 var is_roll = true;         // allows player to roll
@@ -268,6 +271,7 @@ function draw() {
     background(window_bkgd);
     draw_scale();
     update_cursor(); // sets cursor mx and my position
+    noSmooth();     // prevents anti-aliasing for pixel scaling
 
     // Show GUI and template for chapters
     
@@ -502,8 +506,7 @@ function title_screen(){
     } else {
         fill(img_fore); 
     }
-    text('Credits', pw/2, button_bounds[2]-3);
-
+    text('Credits', pw/2, button_bounds[2]-3);   
 
 }
 
@@ -594,7 +597,10 @@ function credits(){
     else { fill(txt_color); }
     text("Tap anywhere to return to title screen", inst_x, inst_y);
 
-    if(mouse_state[0]==1 && mouse_state[1]==0){chpt=0;} // return to title screen on mouse release
+    if(mouse_state[0]==1 && mouse_state[1]==0){
+        //chpt=0;
+        refresh_page = true;
+    } // return to title screen on mouse release
 
 }
 
@@ -658,10 +664,11 @@ function character_selection(){
         // Display image
         let img_x = bounds[0] + box_ht*0.1; 
         let img_y = bounds[2] + box_ht*0.1; 
-        let img_w = box_ht * 0.8; 
+        //let img_w = box_ht * 0.8; 
+        let img_w = 40; 
         noFill(); strokeWeight(1); stroke(img_fore);
         rect(img_x, img_y, img_w, img_w, 1); // image border
-        tint(img_fore); noFill(); noStroke();
+        tint(img_fore); noFill(); noStroke(); 
         image(role_images[i], img_x, img_y, img_w, img_w);
 
         // Column 1 -> name, description, inventory
@@ -1404,8 +1411,8 @@ function dsp_chpt_2(){
         txt_line_y = [195+txt_sz*3.5, 195+txt_sz*4.5, 195+txt_sz*5.5]; // position of each line of text
     } 
     else { // no option selected, show bar off screen
-        cover_y_pos = -99; 
-        txt_line_y = -99;
+        cover_y_pos = -ph; 
+        txt_line_y = -ph;
     }
 
     // Define cover text
@@ -1523,6 +1530,9 @@ function dsp_chpt_2(){
         text(game_over_text, 3,  prompt_y_pos,            pw-txt_sz, ph);
         text(death_messages[0], 3, prompt_y_pos+txt_sz*1.5, pw-txt_sz, ph);
         
+        // Reset variables
+        roll_state = 0; // stop roll animation
+
         // Return to home screen
         if(mouse_state[1] == 1){ // mouse is clicked again
             refresh_page = true; // resets all variables and returns to title
