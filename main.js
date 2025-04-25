@@ -25,7 +25,7 @@ var main_txt_font, title_txt_font;
 // item icons:          21  x 21
 
 // Color Pallette
-var color_mode = 'dark';           // toggle between color pallettes
+var color_mode = 'light';                           // toggle between color pallettes
 var window_bkgd, screen_bkgd, title_bkgd, img_bkgd; // background colors
 var console_border;                                 // game border
 var txt_color, img_fore;                            // foreground colors
@@ -66,12 +66,12 @@ var role_images = [];   // all character images
 
 // Player stats
 var player_role = 0; // index of player role to use (default is id = 0)
-const roles = [
-    {role: 'Prospector', health: 9,  strength: 6,  wisdom: 2,  gold: 8,  inventory_size: 4, img: 'test.png', description: '\"Endless greed\"'},
-    {role: 'Outlaw',     health: 11, strength: 9,  wisdom: 1,  gold: 3,  inventory_size: 2, img: 'test.png', description: '\"Lone bravado\"'},
-    {role: 'Lawyer',     health: 10, strength: 1,  wisdom: 10,  gold: 6,  inventory_size: 3, img: 'test.png', description: '\"Resourceful, wise\"'},
-    {role: 'Banker',     health: 7,  strength: 3,  wisdom: 6,  gold: 12, inventory_size: 3, img: 'test.png', description: '\"The Baron\"'},
-    {role: 'Barkeep',    health: 12, strength: 5,  wisdom: 4,  gold: 2,  inventory_size: 4, img: 'test.png', description: '\"Tough as nails\"'},
+var roles = [
+    {role: 'Prospector', health: 9,  strength: 6,  wisdom: 2,  gold: 8,  inventory_size: 4, img: 'prospector.png', description: '\"Endless greed\"'},
+    {role: 'Outlaw',     health: 11, strength: 9,  wisdom: 1,  gold: 3,  inventory_size: 2, img: 'outlaw.png', description: '\"Lone bravado\"'},
+    {role: 'Lawyer',     health: 10, strength: 1,  wisdom: 10,  gold: 6,  inventory_size: 3, img: 'lawyer.png', description: '\"Resourceful, wise\"'},
+    {role: 'Banker',     health: 7,  strength: 3,  wisdom: 6,  gold: 12, inventory_size: 3, img: 'banker.png', description: '\"The Baron\"'},
+    {role: 'Barkeep',    health: 12, strength: 5,  wisdom: 4,  gold: 2,  inventory_size: 4, img: 'barkeep.png', description: '\"Tough as nails\"'},
 ]; 
 var player_base_stats = {role: 'Default', health: 0, strength: 0, wisdom: 0, gold: 0, inventory_size: 0};   // base stats        -> based on role selected
 var player_item_stats = {role: 'Default', health: 0, strength: 0, wisdom: 0, gold: 0, inventory_size: 0};   // item stats        -> change of player stats due to inventory items
@@ -104,6 +104,7 @@ const items = [
     {id: 13, name: 'ring', health: 0, strength: 1, wisdom: 0, gold: 2, img:'ring.png'},
     {id: 14, name: 'leather vest', health: 4, strength: 0, wisdom: 0, gold: 0, img:'vest.png'},
     {id: 15, name: 'brass knuckles', health: 0, strength: 2, wisdom: 0, gold: 0, img:'knuckles.png'},
+    {id: 16, name: 'fake beard', health: 0, strength: 0, wisdom: 2, gold: 0, img:'beard.png'},
 ]; // all collectible items
 const inventory_xpos = 153; // px position to start inventory boxes
 const inventory_ypos = 24;  // " "
@@ -187,13 +188,41 @@ function setup() {
     // Define chapter order
     Object.freeze(chpt_cards); // prevents shuffle function from changing base chapter list
     shuffle_chpts(); 
+    //journey[0] = chpt_cards[10+1]; // used for testing
 
     // Shuffle death message
     death_messages = shuffle(death_messages);
 
+    // Shuffle character order
+    fy_shuffle(roles, role_images);
+
 }
 
+function fy_shuffle(array, array2) {
+    // Shuffle two arrays of equal length in the same way (Fisher-Yates)
+    //https://stackoverflow.com/questions/18194745/shuffle-multiple-javascript-arrays-in-the-same-way
+    
+    var counter = array.length, temp, temp2, index;
 
+    // While there are elements in the array
+    while (counter > 0) {
+        // Pick a random index
+        index = Math.floor(Math.random() * counter);
+
+        // Decrease counter by 1
+        counter--;
+
+        // And swap the last element with it
+        temp = array[counter];
+        temp2 = array2[counter];
+
+        array[counter] = array[index];
+        array2[counter] = array2[index];
+
+        array[index] = temp;
+        array2[index] = temp2;
+    }
+}
 
 function shuffle_chpts(){
     // Create chapter order for game
@@ -2359,7 +2388,7 @@ const chpt_cards = [
         max_level: 1.00, 
         action_a_prompt: ['Steal gun', 'Roll', 'Strength', 0, 0, 5, [0,0,0,0,0]],   
         action_a_success: ['Item',0,[0,0,0,0,0],''],  
-        action_a_failure: ['Stat',0,[-3,0,0,0,0],'Wake up deputy'], 
+        action_a_failure: ['Stat',0,[-3,0,0,0,0],'Alarm deputy'], 
         action_b_prompt: ['Sneak past', 'Roll', 'Wisdom', 0, 2, 0, [1,0,0,0,0]],     
         action_b_success: ['Continue',0,[1,0,0,0,0],''],            
         action_b_failure: ['Stat',0,[-1,0,0,0,0],'Wake up deputy'] 
@@ -2418,7 +2447,7 @@ const chpt_cards = [
         action_a_failure: ['Stat',0,[0,0,0,0,0],''], 
         action_b_prompt: ['Fight', 'Roll', 'Strength', 0, 5, 99, [0,0,0,0,0]],     
         action_b_success: ['Continue',0,[0,0,0,0,0],''],            
-        action_b_failure: ['Stat',0,[-3,0,0,0,0],''] 
+        action_b_failure: ['Stat',0,[-3,0,0,0,0],'Face attackers'] 
     },
     {
         id: 6,
@@ -2428,11 +2457,11 @@ const chpt_cards = [
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Bet low', 'Roll', 'Gold', 0, 0, 3, [0,0,0,0,0]],   
-        action_a_success: ['Stat',0,[0,0,0,3,0],''],  
-        action_a_failure: ['Stat',0,[0,0,0,-3,0],''], 
+        action_a_success: ['Stat',0,[0,0,0,3,0],'Win back bet'],  
+        action_a_failure: ['Stat',0,[0,0,0,-3,0],'Lose bet'], 
         action_b_prompt: ['Bet high', 'Roll', 'Gold', 0, 3, 99, [0,0,0,0,0]],     
-        action_b_success: ['Stat',0,[0,0,0,3,0],''],            
-        action_b_failure: ['Stat',0,[0,0,0,-3,0],''] 
+        action_b_success: ['Stat',0,[0,0,0,5,0],'Win entire pot'],            
+        action_b_failure: ['Stat',0,[0,0,0,-5,0],'Lose bet'] 
     },
     {
         id: 7,
@@ -2471,7 +2500,7 @@ const chpt_cards = [
         max_level: 1.00, 
         action_a_prompt: ['Shoot', 'Roll', 'Strength', 5, 0, 3, [0,0,0,0,0]],   
         action_a_success: ['Continue',0,[0,0,0,0,0],''],  
-        action_a_failure: ['Stat',0,[-4,0,0,0,0],''], 
+        action_a_failure: ['Stat',0,[-4,0,0,0,0],'Suffer gunshot wound'], 
         action_b_prompt: ['Break mirrors', 'None', '', 5, 4, 99, [0,0,0,0,0]],     
         action_b_success: ['Continue',0,[0,0,0,0,0],''],            
         action_b_failure: ['Stat',0,[0,-1,0,0,0],''] 
@@ -2485,7 +2514,7 @@ const chpt_cards = [
         max_level: 1.00, 
         action_a_prompt: ['Check-up', 'Roll', 'Health', 5, 4, 99, [0,0,0,0,0]],   
         action_a_success: ['Continue',0,[0,0,0,0,0],''],  
-        action_a_failure: ['Stat',0,[+1,0,0,-1,0],''], 
+        action_a_failure: ['Stat',0,[+1,0,0,-1,0],'Buy medecine'], 
         action_b_prompt: ['None', 'None', '', 5, 4, 99, [0,0,0,0,0]],     
         action_b_success: ['Continue',0,[0,0,0,0,0],''],            
         action_b_failure: ['Stat',0,[0,-1,0,0,0],''] 
@@ -2527,10 +2556,10 @@ const chpt_cards = [
         max_level: 1.00, 
         action_a_prompt: ['Disarm her', 'Roll', 'Strength', 9, 5, 99, [0,0,0,0,0]],   
         action_a_success: ['Continue',0,[0,0,0,0,0],''],  
-        action_a_failure: ['Stat',0,[-2,0,0,0,0],''], 
+        action_a_failure: ['Stat',0,[-2,0,0,0,0],'Suffer stab wound'], 
         action_b_prompt: ['Talk down', 'Roll', 'Wisdom', 5, 5, 99, [0,0,0,0,0]],     
         action_b_success: ['Continue',0,[0,0,0,0,0],''],            
-        action_b_failure: ['Stat',0,[-2,0,0,0,0],''] 
+        action_b_failure: ['Stat',0,[-2,0,0,0,0],'Suffer stab wound'] 
     },
     {
         id: 14,
@@ -2563,16 +2592,16 @@ const chpt_cards = [
     {
         id: 16,
         type: 'Normal', 
-        prompt: 'A group of card sharks huddle over a small table playing poker. You grab a seat at an empty stool and check your cards--a pair of 9\'s.',
+        prompt: 'Several passengers are lounging in the evening light of the smoking car while playing poker over a cigar. You grab a seat at an empty stool beside them to join in. The action falls to you as you check your cards--a pair of 9\'s.',
         img: 'test.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Check', 'Roll', 'Gold', 5, 3, 99, [0,0,0,0,0]],   
-        action_a_success: ['Stat',0,[0,0,0,+2,0],''],  
-        action_a_failure: ['Stat',0,[0,0,0,-3,0],''], 
+        action_a_success: ['Stat',0,[0,0,0,+2,0],'Win pot'],  
+        action_a_failure: ['Stat',0,[0,0,0,-3,0],'Lose your buy-in'], 
         action_b_prompt: ['Raise', 'Roll', 'Gold', 6, 4, 99, [0,0,0,0,0]],     
-        action_b_success: ['Stat',0,[0,0,0,+6,0],''],            
-        action_b_failure: ['Stat',0,[0,0,0,-4,0],''] 
+        action_b_success: ['Stat',0,[0,0,0,+6,0],'Win pot'],            
+        action_b_failure: ['Stat',0,[0,0,0,-4,0],'Lose your bet'] 
     },
     {
         id: 17,
@@ -2582,8 +2611,8 @@ const chpt_cards = [
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Save', 'Roll', 'Strength', 5, 5, 99, [0,0,0,0,0]],   
-        action_a_success: ['Stat',0,[+1,+1,0,0,0],''],  
-        action_a_failure: ['Stat',0,[-1,0,0,0,0],''], 
+        action_a_success: ['Stat',0,[+1,+1,0,0,0],'Feel relief'],  
+        action_a_failure: ['Stat',0,[-1,0,0,0,0],'Suffer from guilt'], 
         action_b_prompt: ['Raise', 'None', '', 6, 4, 99, [0,0,0,0,0]],     
         action_b_success: ['Stat',0,[0,0,0,+6,0],''],            
         action_b_failure: ['Stat',0,[0,0,0,-4,0],''] 
@@ -2596,10 +2625,10 @@ const chpt_cards = [
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Mend shirt', 'Roll', 'Wisdom', 5, 2, 99, [0,0,0,0,0]],   
-        action_a_success: ['Stat',0,[0,+2,0,0,0],''],  
+        action_a_success: ['Stat',0,[0,+2,0,0,0],'Gain arm mobility'],  
         action_a_failure: ['Continue',0,[0,0,0,0,0],''], 
         action_b_prompt: ['Patch pants', 'Roll', 'Wisdom', 6, 3, 99, [0,0,0,0,0]],     
-        action_b_success: ['Stat',0,[+2,0,0,0,0],''],            
+        action_b_success: ['Stat',0,[+2,0,0,0,0],'Add knee padding'],            
         action_b_failure: ['Continue',0,[0,0,0,0,0],''] 
     },
     {
@@ -2624,10 +2653,10 @@ const chpt_cards = [
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Defend', 'Combat', 'Wisdom', 3, 4, 99, [0,0,0,0,0]],   
-        action_a_success: ['Stat',0,[+2,0,+2,0,0],''],  
+        action_a_success: ['Stat',0,[+2,0,+2,0,0],'Win trial'],  
         action_a_failure: ['Stat',0,[0,-1,0,0,0],''], 
         action_b_prompt: ['Accuse', 'Combat', 'Wisdom', 3, 4, 99, [0,0,0,0,0]],     
-        action_b_success: ['Stat',0,[0,0,+1,+3,0],''],            
+        action_b_success: ['Stat',0,[0,0,+1,+3,0],'Win trial'],            
         action_b_failure: ['Stat',0,[0,-1,0,0,0],''] 
     },
     {
@@ -2639,7 +2668,7 @@ const chpt_cards = [
         max_level: 1.00, 
         action_a_prompt: ['Run', 'Roll', 'Strength', 3, 3, 99, [0,0,0,0,0]],   
         action_a_success: ['Continue',0,[0,0,0,0,0],''],  
-        action_a_failure: ['Stat',0,[-3,0,0,0,0],''], 
+        action_a_failure: ['Stat',0,[-3,0,0,0,0],'Get bitten'], 
         action_b_prompt: ['Fight', 'Combat', 'Strength', 6, 3, 99, [0,0,0,0,0]],     
         action_b_success: ['Continue',0,[0,0,0,0,0],''],            
         action_b_failure: ['Stat',0,[-1,0,0,0,0],''] 
@@ -2653,7 +2682,7 @@ const chpt_cards = [
         max_level: 1.00, 
         action_a_prompt: ['Struggle', 'Roll', 'Strength', 3, 4, 99, [0,0,0,0,0]],   
         action_a_success: ['Item',11,[0,0,0,0,0],''],  
-        action_a_failure: ['Stat',0,[-2,0,0,0,0],''], 
+        action_a_failure: ['Stat',0,[-2,0,0,0,0],'Suffer frostbite'], 
         action_b_prompt: ['Fight', 'None', '', 6, 3, 99, [0,0,0,0,0]],     
         action_b_success: ['Continue',0,[0,0,0,0,0],''],            
         action_b_failure: ['Stat',0,[-1,0,0,0,0],''] 
@@ -2667,7 +2696,7 @@ const chpt_cards = [
         max_level: 1.00, 
         action_a_prompt: ['Escape', 'Roll', 'Strength', 3, 4, 99, [0,0,0,0,0]],   
         action_a_success: ['Item',10,[0,0,0,0,0],''],  
-        action_a_failure: ['Stat',0,[-2,0,0,0,0],''], 
+        action_a_failure: ['Stat',0,[-2,0,0,0,0],'Suffer burns'], 
         action_b_prompt: ['Fight', 'None', '', 6, 3, 99, [0,0,0,0,0]],     
         action_b_success: ['Continue',0,[0,0,0,0,0],''],            
         action_b_failure: ['Stat',0,[-1,0,0,0,0],''] 
@@ -2750,8 +2779,8 @@ const chpt_cards = [
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Blend in', 'Roll', 'Wisdom', 9, 0, 4, [0,0,0,0,0]],   
-        action_a_success: ['Continue',0,[0,0,0,0,0],''],  
-        action_a_failure: ['Stat',0,[-3,0,0,0,0],''], 
+        action_a_success: ['Item',16,[0,0,0,0,0],''],  
+        action_a_failure: ['Stat',0,[-3,0,0,0,0],'Get caught'], 
         action_b_prompt: ['Fight', 'Combat', 'Strength', 6, 3, 99, [0,0,0,0,0]],     
         action_b_success: ['Continue',0,[0,0,0,0,0],''],            
         action_b_failure: ['Stat',0,[-1,0,0,0,0],''] 
@@ -2821,10 +2850,10 @@ const chpt_cards = [
         max_level: 1.00, 
         action_a_prompt: ['Brace yourself', 'Roll', 'Strength', 9, 0, 4, [0,0,0,0,0]],   
         action_a_success: ['Continue',0,[0,0,0,0,0],''],  
-        action_a_failure: ['Stat',0,[-3,0,0,0,0],''], 
+        action_a_failure: ['Stat',0,[-3,0,0,0,0],'Touch scalding metal'], 
         action_b_prompt: ['Leave coat', 'Roll', 'Strength', 6, 0, 4, [0,0,0,0,0]],     
-        action_b_success: ['Stat',0,[0,0,0,0,-1],''],            
-        action_b_failure: ['Stat',0,[-2,0,0,0,0],''] 
+        action_b_success: ['Stat',0,[0,0,0,0,-1],'Lose item in pocket'],            
+        action_b_failure: ['Stat',0,[-2,0,0,0,0],'Fall onto pipes'] 
     },
     {
         id: 35,
@@ -2835,10 +2864,10 @@ const chpt_cards = [
         max_level: 1.00, 
         action_a_prompt: ['Steal pearls', 'Roll', 'Strength', 9, 0, 5, [0,0,0,0,0]],   
         action_a_success: ['Item',12,[0,0,0,0,0],''],  
-        action_a_failure: ['Stat',0,[-2,0,0,-2,0],''], 
+        action_a_failure: ['Stat',0,[-2,0,0,-2,0],'Get arrested'], 
         action_b_prompt: ['Pickpocket ring', 'Roll', 'Wisdom', 6, 4, 99, [0,0,0,0,0]],     
         action_b_success: ['Item',13,[0,0,0,0,0],''],            
-        action_b_failure: ['Stat',0,[-3,0,0,-2,0],''] 
+        action_b_failure: ['Stat',0,[-3,0,0,-2,0],'Get arrested'] 
     },
     {
         id: 36,
@@ -2863,10 +2892,10 @@ const chpt_cards = [
         max_level: 1.00, 
         action_a_prompt: ['Compliment', 'Combat', 'Health', 6, 0, 99, [0,0,0,0,0]],   
         action_a_success: ['Continue',0,[0,0,0,0,0],''],  
-        action_a_failure: ['Stat',0,[1,0,0,0,0],''], 
+        action_a_failure: ['Stat',0,[1,0,0,0,0],'Feel giddy'], 
         action_b_prompt: ['Propose', 'Roll', 'Health', 7, 5, 99, [0,0,0,0,0]],     
-        action_b_success: ['Stat',0,[4,0,0,0,0],''],            
-        action_b_failure: ['Stat',0,[-2,0,0,-3,0],''] 
+        action_b_success: ['Stat',0,[4,0,0,0,0],'Find true love'],            
+        action_b_failure: ['Stat',0,[-2,0,0,-3,0],'Suffer heartbreak'] 
     },
     {
         id: 38,
@@ -2894,8 +2923,22 @@ const chpt_cards = [
         action_a_failure: ['Stat',0,[-1,0,0,0,0],''], 
         action_b_prompt: ['Attack lady', 'Roll', 'Strength', 0, 5, 99, [0,0,0,0,0]],     
         action_b_success: ['Continue',0,[0,0,0,0,0],''],            
-        action_b_failure: ['Stat',0,[-3,0,0,0,0],''] 
-    }
+        action_b_failure: ['Stat',0,[-3,0,0,0,0],'Become terrified'] 
+    },
+    {
+        id: 40,
+        type: 'Normal', 
+        prompt: 'A group of tired coal miners are huddled around a table discussing plans for unionizing. As you eavesdrop on both sides of the debate, a fever of emotion takes over and you decide to join the debate.',
+        img: 'test.png',
+        min_level: 0.00, 
+        max_level: 1.00, 
+        action_a_prompt: ['Use logos', 'Roll', 'Wisdom', 0, 3, 99, [0,0,0,0,0]],   
+        action_a_success: ['Stat',0,[0,1,2,0,0],'Gain fierce followers'],  
+        action_a_failure: ['Stat',0,[0,0,-1,0,0],'Recieve verbal backlash'], 
+        action_b_prompt: ['Use pathos', 'Roll', 'Health', 0, 3, 99, [0,0,0,0,0]],     
+        action_b_success: ['Stat',0,[2,1,0,0,0],'Gain loyal supporters'],            
+        action_b_failure: ['Stat',0,[-1,0,0,0,0],'Crowd turns against you'] 
+    },
 ];
 
 
