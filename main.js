@@ -1,5 +1,5 @@
 /*
-TITLE: Train Crawler
+TITLE: Derailed
 AUTHOR: Andrew Smith
 VERSION HISTORY:
 -  
@@ -147,7 +147,7 @@ function preload() {
     train_img = loadImage('Images/Title/train.png'); // " "
 
     // Load chapters, items, and characters
-    for(let i=0; i<chpt_cards.length; i++){ 
+    for(let i=2; i<chpt_cards.length; i++){ // skip first two chapters (templates)
         append(chpt_images, loadImage('Images/Chapters/'+chpt_cards[i].img)); // load each chapter image
     }
     for(let i=0; i<items.length; i++){ 
@@ -227,6 +227,9 @@ function fy_shuffle(array, array2) {
 function shuffle_chpts(){
     // Create chapter order for game
 
+    // Reset journey
+    journey = [];
+
     // Main chapter order
     var rnd_chpts = shuffle(chpt_cards); // randomize chapter order
     let i = 0; // current chapter position
@@ -266,6 +269,12 @@ function shuffle_chpts(){
     for(var k=0; k<boss_chapters.length; k++){
         append(journey,boss_chapters[k]);
     }
+
+    // Set chapter (testing purposes)
+    let chpt_id = 25; // chapter to start with 
+    journey[0] = chpt_cards[chpt_id + 1]; 
+
+
 }
 
 function windowResized() {
@@ -302,6 +311,7 @@ function draw() {
     update_cursor(); // sets cursor mx and my position
     noSmooth();     // prevents anti-aliasing for pixel scaling
 
+
     // Show GUI and template for chapters
     
     // Main code
@@ -329,8 +339,30 @@ function draw() {
     // Display screen frame
     draw_frame();
 
-    // Refresh page
-    if(refresh_page) { location.reload(); refresh_page = false; }
+    // Restart game
+    if(refresh_page) { 
+        // Reset all variables
+        chpt = 0; 
+        inventory = [-1,-1,-1,-1];
+        curr_option = 'Null';
+        option_state = 1;
+        death_stat = 'Null';
+        player_accm_stats = {role: 'Default', health: 0, strength: 0, wisdom: 0, gold: 0, inventory_size: 0};
+        is_roll = true;
+        combat_reroll = false;
+        roll_result = -1;
+        sum_rolls = 0; 
+        roll_state = 0;
+        prev_frame = 0; 
+        crs_pos_x = 0; 
+        crs_tot_pos = 0;
+
+        // Reshuffle chapters
+        shuffle_chpts();
+
+        // Prevent further reset
+        refresh_page = false; 
+    }
 
     // Update mouse state
     mouse_state[0] = mouse_state[1];
@@ -679,6 +711,7 @@ function character_selection(){
             if(mouse_state[0]==1 && mouse_state[1]==0){ // mouse was just released
                 player_role = i;                        // set player role
                 player_base_stats = roles[player_role]; // set player base stats
+                //player_curr_stats = player_base_stats;  // initial stats
                 chpt = 10;                              // begin game
             }
         }
@@ -941,7 +974,8 @@ function dsp_chpt() {
     let title_y_pos = 64; // bottom of title block
     fill(img_bkgd); noStroke(); rect(6,title_y_pos,img_wd,img_ht); // background behind image
     tint(img_fore); noFill(); noStroke();
-    image(chpt_images[chpt-10],6,title_y_pos,img_wd,img_ht); // display image
+    image(chpt_images[curr_chpt.id-1],6,title_y_pos,img_wd,img_ht); // display image
+
 
     // Image border
     noFill(); stroke(txt_color); strokeWeight(1); 
@@ -1552,6 +1586,9 @@ function dsp_chpt_2(){
         else if(death_stat=='Gold'){
             game_over_text = 'GAME OVER. You have gone bankrupt.';
         }
+        else if(death_stat=='Inventory'){
+            game_over_text = 'GAME OVER. You have lost all possessions.';
+        }
 
         // Display death screen text
         textSize(txt_sz); noStroke(); textLeading(txt_sz); textAlign(LEFT);
@@ -1806,7 +1843,7 @@ function play_chpt(){
             player_accm_stats.strength  += curr_chpt.action_a_prompt[6][1];
             player_accm_stats.wisdom    += curr_chpt.action_a_prompt[6][2];
             player_accm_stats.gold      += curr_chpt.action_a_prompt[6][3];
-            player_accm_stats.inventory += curr_chpt.action_a_prompt[6][4]; 
+            player_accm_stats.inventory_size += curr_chpt.action_a_prompt[6][4]; 
 
             // Move to next chapter
             chpt += 1;             // go to next chapter
@@ -1870,7 +1907,7 @@ function play_chpt(){
             player_accm_stats.strength  += curr_chpt.action_b_prompt[6][1];
             player_accm_stats.wisdom    += curr_chpt.action_b_prompt[6][2];
             player_accm_stats.gold      += curr_chpt.action_b_prompt[6][3];
-            player_accm_stats.inventory += curr_chpt.action_b_prompt[6][4]; 
+            player_accm_stats.inventory_size += curr_chpt.action_b_prompt[6][4]; 
 
             // Move to next chapter
             chpt += 1;             // go to next chapter
@@ -1907,7 +1944,7 @@ function play_chpt(){
             player_accm_stats.strength  += curr_chpt.action_a_failure[2][1];
             player_accm_stats.wisdom    += curr_chpt.action_a_failure[2][2];
             player_accm_stats.gold      += curr_chpt.action_a_failure[2][3];
-            player_accm_stats.inventory += curr_chpt.action_a_failure[2][4]; 
+            player_accm_stats.inventory_size += curr_chpt.action_a_failure[2][4]; 
             // Reroll
             combat_reroll = true; is_roll = true; 
         }
@@ -1917,7 +1954,7 @@ function play_chpt(){
             player_accm_stats.strength  += curr_chpt.action_b_failure[2][1];
             player_accm_stats.wisdom    += curr_chpt.action_b_failure[2][2];
             player_accm_stats.gold      += curr_chpt.action_b_failure[2][3];
-            player_accm_stats.inventory += curr_chpt.action_b_failure[2][4]; 
+            player_accm_stats.inventory_size += curr_chpt.action_b_failure[2][4]; 
             // Reroll
             combat_reroll = true; is_roll = true; 
         }
@@ -1941,7 +1978,7 @@ function play_chpt(){
             player_accm_stats.strength  += curr_chpt.action_a_success[2][1];
             player_accm_stats.wisdom    += curr_chpt.action_a_success[2][2];
             player_accm_stats.gold      += curr_chpt.action_a_success[2][3];
-            player_accm_stats.inventory += curr_chpt.action_a_success[2][4]; 
+            player_accm_stats.inventory_size += curr_chpt.action_a_success[2][4]; 
 
             option_state = 9; // click to continue
         }
@@ -1952,7 +1989,7 @@ function play_chpt(){
             player_accm_stats.strength  += curr_chpt.action_b_success[2][1];
             player_accm_stats.wisdom    += curr_chpt.action_b_success[2][2];
             player_accm_stats.gold      += curr_chpt.action_b_success[2][3];
-            player_accm_stats.inventory += curr_chpt.action_b_success[2][4]; 
+            player_accm_stats.inventory_size += curr_chpt.action_b_success[2][4]; 
 
             option_state = 9; // click to continue
         }
@@ -1970,7 +2007,7 @@ function play_chpt(){
             player_accm_stats.strength  += curr_chpt.action_a_failure[2][1];
             player_accm_stats.wisdom    += curr_chpt.action_a_failure[2][2];
             player_accm_stats.gold      += curr_chpt.action_a_failure[2][3];
-            player_accm_stats.inventory += curr_chpt.action_a_failure[2][4]; 
+            player_accm_stats.inventory_size += curr_chpt.action_a_failure[2][4]; 
 
             option_state = 9; // click to continue
         }
@@ -1986,7 +2023,7 @@ function play_chpt(){
             player_accm_stats.strength  += curr_chpt.action_b_failure[2][1];
             player_accm_stats.wisdom    += curr_chpt.action_b_failure[2][2];
             player_accm_stats.gold      += curr_chpt.action_b_failure[2][3];
-            player_accm_stats.inventory += curr_chpt.action_b_failure[2][4]; 
+            player_accm_stats.inventory_size += curr_chpt.action_b_failure[2][4]; 
 
             option_state = 9; // click to continue
         }
@@ -2095,6 +2132,15 @@ function roll(roll_stat, roll_min, roll_max, roll_type){
                     roll_state = 2;             // skip rolling animation and show blinking result
                 }
             }
+
+            // Edge case -> players stats guarentee success
+            if(stat_val <= roll_max && roll_max <= 12 && roll_min <= 1){
+                if(roll_type == 'Normal Continue' || roll_type == 'Normal Item'){ // only applies to non-combat rolls
+                    crs_pos_x = stat_val - 1;   // roll results = maximum stat value (arbitrary)
+                    roll_state = 2;             // skip rolling animation and show blinking result
+                }
+            }
+            
         }
 
         // Rolling animation
@@ -2199,7 +2245,7 @@ function roll(roll_stat, roll_min, roll_max, roll_type){
                 var stat_change = [0,0,0,0,0]; // amount of change for player stats on unsuccessful roll
                 if(curr_option == 'A') { stat_change = curr_chpt.action_a_failure[2]; }
                 if(curr_option == 'B') { stat_change = curr_chpt.action_b_failure[2]; }
-                var new_stats = [player_curr_stats.health + stat_change[0], player_curr_stats.strength + stat_change[1], player_curr_stats.wisdom + stat_change[2], player_curr_stats.gold + stat_change[3], player_curr_stats.inventory + stat_change[4]]; 
+                var new_stats = [player_curr_stats.health + stat_change[0], player_curr_stats.strength + stat_change[1], player_curr_stats.wisdom + stat_change[2], player_curr_stats.gold + stat_change[3], player_curr_stats.inventory_size + stat_change[4]]; 
                 if(new_stats[1] < 1 || new_stats[2] < 1 || new_stats[3] < 1 || new_stats[4] < 1){ // if any non-health stat becomes 0
                     //option_state = 8; // continue after unsuccessful combat roll
                     option_state = 5;  // continue after unsuccessful roll -> death screen calculated later
@@ -2233,7 +2279,7 @@ function mouseReleased(){
 
 
 function inventory_update(){
-    // Displays inventory items and applies stat changes
+     // Displays inventory items and applies stat changes
 
     // Display items
     var num_inv = player_curr_stats.inventory_size; // number of inventory items
@@ -2255,13 +2301,14 @@ function inventory_update(){
 
 
     // Calculate stat change
-    player_item_stats = {health: 0, strength: 0, wisdom: 0, gold: 0}; // change of player stats due to inventory items
+    player_item_stats = {health: 0, strength: 0, wisdom: 0, gold: 0, inventory_size: 0}; // change of player stats due to inventory items
     for(let i=0; i<num_inv; i++){
         if(inventory[i] >= 0){ // Add all items
             player_item_stats.health += items[inventory[i]].health;
             player_item_stats.strength += items[inventory[i]].strength;
             player_item_stats.wisdom += items[inventory[i]].wisdom;
             player_item_stats.gold += items[inventory[i]].gold;
+            //player_item_stats.inventory_size += items[inventory[i]].inventory_size;
         }
     }
 
@@ -2272,7 +2319,8 @@ function inventory_update(){
     player_modf_stats.strength  = player_base_stats.strength    + player_item_stats.strength; 
     player_modf_stats.wisdom    = player_base_stats.wisdom      + player_item_stats.wisdom; 
     player_modf_stats.gold      = player_base_stats.gold        + player_item_stats.gold; 
-    player_modf_stats.inventory_size = player_base_stats.inventory_size;
+    //player_modf_stats.inventory_size = player_base_stats.inventory_size + player_item_stats.inventory_size; 
+
     
     if(player_modf_stats.health < 1)    { player_modf_stats.health = 1;     }
     if(player_modf_stats.health > 12)   { player_modf_stats.health = 12;    }    
@@ -2281,7 +2329,10 @@ function inventory_update(){
     if(player_modf_stats.wisdom < 1)    { player_modf_stats.wisdom = 1;     }  
     if(player_modf_stats.wisdom > 12)   { player_modf_stats.wisdom = 12;    }  
     if(player_modf_stats.gold < 1)      { player_modf_stats.gold = 1;       }  
-    if(player_modf_stats.gold > 12)     { player_modf_stats.gold = 12;      }  
+    if(player_modf_stats.gold > 12)     { player_modf_stats.gold = 12;      } 
+    //if(player_modf_stats.inventory_size < 1) { player_modf_stats.inventory_size = 1;      }  
+    //if(player_modf_stats.inventory_size > 4) { player_modf_stats.inventory_size = 4;      }  
+
 
 
     // Update item stats with bounds to accurately show stat bars
@@ -2289,6 +2340,7 @@ function inventory_update(){
     player_item_stats.strength = player_modf_stats.strength - player_base_stats.strength; 
     player_item_stats.wisdom = player_modf_stats.wisdom - player_base_stats.wisdom; 
     player_item_stats.gold = player_modf_stats.gold - player_base_stats.gold; 
+    //player_item_stats.inventory_size = player_modf_stats.inventory_size - player_base_stats.inventory_size; 
 
     
     // Calculate current stats
@@ -2297,33 +2349,42 @@ function inventory_update(){
     player_curr_stats.strength          = player_modf_stats.strength        + player_accm_stats.strength; 
     player_curr_stats.wisdom            = player_modf_stats.wisdom          + player_accm_stats.wisdom; 
     player_curr_stats.gold              = player_modf_stats.gold            + player_accm_stats.gold; 
-    player_curr_stats.inventory_size    = player_modf_stats.inventory_size  + player_accm_stats.inventory_size; 
+    player_curr_stats.inventory_size    = player_base_stats.inventory_size  + player_accm_stats.inventory_size; 
 
     // Set bounds on stats from accumulated effects
     if(player_curr_stats.health > 12){ player_curr_stats.health = 12; }
     if(player_curr_stats.strength > 12){ player_curr_stats.strength = 12; }
     if(player_curr_stats.wisdom > 12){ player_curr_stats.wisdom = 12; }
     if(player_curr_stats.gold > 12){ player_curr_stats.gold = 12; }
-    if(player_curr_stats.inventory < 1){ player_curr_stats.inventory = 1; }
-    if(player_curr_stats.inventory > 4){ player_curr_stats.inventory = 4; }
+    //if(player_curr_stats.inventory_size < 1){ player_curr_stats.inventory_size = 1; }
+    //if(player_curr_stats.inventory_size > 4){ player_curr_stats.inventory_size = 4; }
 
 
     // Death screen
     if(player_curr_stats.health < 1){
         option_state=10; // display death screen
+        player_curr_stats.health = 0; player_item_stats.health = 0;  
         death_stat = 'Health';
     }
     else if(player_curr_stats.strength < 1){
         option_state=10; // display death screen
+        player_curr_stats.strength = 0; player_item_stats.strength = 0; 
         death_stat = 'Strength';
     }
     else if(player_curr_stats.wisdom < 1){
         option_state=10; // display death screen
+        player_curr_stats.wisdom = 0; player_item_stats.wisdom = 0; 
         death_stat = 'Wisdom';
     }
     else if(player_curr_stats.gold < 1){
         option_state=10; // display death screen
+        player_curr_stats.gold = 0; player_item_stats.gold = 0; 
         death_stat = 'Gold';
+    }
+    else if(player_curr_stats.inventory_size < 1){
+        option_state=10; // display death screen
+        player_curr_stats.inventory_size = 0; player_item_stats.inventory_size = 0; 
+        death_stat = 'Inventory';
     }
 
 }
@@ -2383,7 +2444,7 @@ const chpt_cards = [
         id: 1,
         type: 'Normal', 
         prompt: 'You step into a quiet train car with a deputy asleep with his head against the window. His hat covers his eyes and you can see his gun sticking out from the holster on his side.',
-        img: 'test.png',
+        img: '01.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Steal gun', 'Roll', 'Strength', 0, 0, 5, [0,0,0,0,0]],   
@@ -2397,7 +2458,7 @@ const chpt_cards = [
         id: 2,
         type: 'Normal', 
         prompt: 'A group of young ranchers are crowded around a table covered in playing cards and beer. Between their laughter and slurred singing of Oh! Susanna, one of them asks you to join.',
-        img: 'test.png',
+        img: '02.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Agree', 'Item', 'Strength', 1, 0, 99, [0,0,0,0,0]],   
@@ -2411,7 +2472,7 @@ const chpt_cards = [
         id: 3,
         type: 'Normal', 
         prompt: 'A sharp-dressed salesman spots you on the other side of the car and eagerly rushes towards you. In their briefcase they show you an old dagger with an exorbitant pricetag, but they are willing to negogiate.',
-        img: 'test.png',
+        img: '03.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Negotiate', 'Combat', 'Gold', 5, 0, 99, [0,0,0,0,0]],   
@@ -2425,7 +2486,7 @@ const chpt_cards = [
         id: 4,
         type: 'Normal', 
         prompt: 'A sharp-dressed salesman spots you on the other side of the car and eagerly rushes towards you. In their briefcase they show you an old pistol with an exorbitant pricetag, but they are willing to negogiate.',
-        img: 'test.png',
+        img: '03.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Negotiate', 'Combat', 'Gold', 5, 0, 99, [0,0,0,0,0]],   
@@ -2439,7 +2500,7 @@ const chpt_cards = [
         id: 5,
         type: 'Normal', 
         prompt: 'Rocks crash into the windows of your car as a gang of stage coach robbers jump through them and quickly surround you. They are heavily armed and have a thirst for blood or gold, whichever comes first.',
-        img: 'test.png',
+        img: '05.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Bribe', 'Stat', 'Strength', 0, 0, 99, [0,0,0,-5,0]],   
@@ -2453,7 +2514,7 @@ const chpt_cards = [
         id: 6,
         type: 'Normal', 
         prompt: 'You find yourself in a dimly lit car with several strangers hunched over a table of cards. You bump into the table from the darkness and disturb the players, prompting them to force you to join the game for a hand.',
-        img: 'test.png',
+        img: '02.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Bet low', 'Roll', 'Gold', 0, 0, 3, [0,0,0,0,0]],   
@@ -2467,7 +2528,7 @@ const chpt_cards = [
         id: 7,
         type: 'Normal', 
         prompt: 'A heavy fog hits you as you enter the smoking cabin, disorienting you from the mix of tabacco and opium. You begin to lose sight of the door opposite of you and have to crawl to make your escape.',
-        img: 'test.png',
+        img: '07.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Crawl', 'Combat', 'Wisdom', 4, 2, 99, [0,0,0,0,0]],   
@@ -2481,7 +2542,7 @@ const chpt_cards = [
         id: 8,
         type: 'Normal', 
         prompt: 'You enter a car filled with mirrors, a disorienting maze reflecting into your heart and soul. You are soon unable to determine which set of eyes are yours or the mirrors, and which direction leads to the exit.',
-        img: 'test.png',
+        img: '08.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Find exit', 'Combat', 'Wisdom', 5, 2, 99, [0,0,0,0,0]],   
@@ -2495,7 +2556,7 @@ const chpt_cards = [
         id: 9,
         type: 'Normal', 
         prompt: 'The passengers of the train car fall silent as a gunslinger steps across the aisle from you. With anger in their eyes and a hand near their holster, you only have time for one careful shot before escaping.',
-        img: 'test.png',
+        img: '09.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Shoot', 'Roll', 'Strength', 5, 0, 3, [0,0,0,0,0]],   
@@ -2537,7 +2598,7 @@ const chpt_cards = [
         id: 12,
         type: 'Normal', 
         prompt: 'Steamed vegetables, salted meats, fresh tomatoes, and a pantry full of aromas flood the car as you enter the dining car. You collapse into the closest seat and the chef asks for your order.',
-        img: 'test.png',
+        img: '12.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Chili', 'Stat', 'Health', 9, 4, 99, [+3,0,0,0,0]],   
@@ -2592,8 +2653,8 @@ const chpt_cards = [
     {
         id: 16,
         type: 'Normal', 
-        prompt: 'Several passengers are lounging in the evening light of the smoking car while playing poker over a cigar. You grab a seat at an empty stool beside them to join in. The action falls to you as you check your cards--a pair of 9\'s.',
-        img: 'test.png',
+        prompt: 'Several passengers are lounging in the evening light of the smoking car while playing poker over a cigar. You grab a seat at an empty stool beside them to join in. The action falls to you.',
+        img: '02.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Check', 'Roll', 'Gold', 5, 3, 99, [0,0,0,0,0]],   
