@@ -2,10 +2,13 @@
 TITLE: Derailed
 AUTHOR: Andrew Smith
 VERSION HISTORY:
--  
+-  1.0.0 (5/10/2025): Initial release 
+- 
 */
 
 
+// About
+var game_version = 'v1.0.0';
 
 // General Options
 var isMobile;             // determines whether device is mobile or desktop, used for mouseclick/touch detection
@@ -61,17 +64,18 @@ var death_stat = 'Null';    // which stat causes game over
 */
 var num_options;        // number of options in current chapter, 1 (A only) or 2 (A and B)
 var chpt_images = [];   // all chapter images
+var boss_images = [];   // all boss chapter images
 var item_images = [];   // all item images
 var role_images = [];   // all character images
 
 // Player stats
 var player_role = 0; // index of player role to use (default is id = 0)
 var roles = [
-    {role: 'Prospector', health: 9,  strength: 6,  wisdom: 2,  gold: 8,  inventory_size: 4, img: 'prospector.png', description: '\"Endless greed\"'},
+    {role: 'Prospector', health: 9,  strength: 6,  wisdom: 2,  gold: 8,  inventory_size: 4, img: 'prospector.png', description: '\"The 49er\"'},
     {role: 'Outlaw',     health: 11, strength: 9,  wisdom: 1,  gold: 3,  inventory_size: 2, img: 'outlaw.png', description: '\"Lone bravado\"'},
-    {role: 'Lawyer',     health: 10, strength: 1,  wisdom: 10,  gold: 6,  inventory_size: 3, img: 'lawyer.png', description: '\"Resourceful, wise\"'},
+    {role: 'Lawyer',     health: 10, strength: 1,  wisdom: 10,  gold: 6,  inventory_size: 3, img: 'lawyer.png', description: '\"Devil\'s advocate\"'},
     {role: 'Banker',     health: 7,  strength: 3,  wisdom: 6,  gold: 12, inventory_size: 3, img: 'banker.png', description: '\"The Baron\"'},
-    {role: 'Barkeep',    health: 12, strength: 5,  wisdom: 4,  gold: 2,  inventory_size: 4, img: 'barkeep.png', description: '\"Tough as nails\"'},
+    {role: 'Barkeep',    health: 12, strength: 5,  wisdom: 4,  gold: 2,  inventory_size: 4, img: 'barkeep.png', description: '\"Saint Boniface\"'},
 ]; 
 var player_base_stats = {role: 'Default', health: 0, strength: 0, wisdom: 0, gold: 0, inventory_size: 0};   // base stats        -> based on role selected
 var player_item_stats = {role: 'Default', health: 0, strength: 0, wisdom: 0, gold: 0, inventory_size: 0};   // item stats        -> change of player stats due to inventory items
@@ -88,23 +92,23 @@ const txt_y_pos_0 = 10;             // first stat y pos
 // Player inventory
 var inventory = [-1,-1,-1,-1]; // player inventory, -1 = empty slot, # = item ID
 const items = [
-    {id: 0,  name: 'revolver', health: 0, strength: 3, wisdom: 0, gold: 0, img:'revolver.png'},
-    {id: 1,  name: 'beer', health: 3, strength: 0, wisdom: -2, gold: 0, img:'beer.png'},
-    {id: 2,  name: 'dagger', health: 0, strength: 2, wisdom: 0, gold: 0, img:'dagger.png'},
-    {id: 3,  name: 'pistol', health: 0, strength: 3, wisdom: 0, gold: 0, img:'pistol.png'},
-    {id: 4,  name: 'hat', health: 2, strength: 0, wisdom: 0, gold: 0, img:'hat.png'},
-    {id: 5,  name: 'glasses', health: 1, strength: 0, wisdom: 1, gold: 0, img:'glasses.png'},
-    {id: 6,  name: 'book', health: 0, strength: 0, wisdom: 3, gold: 0, img:'book.png'},
-    {id: 7,  name: 'rotten apple', health: -2, strength: 0, wisdom: 0, gold: 0, img:'apple.png'},
-    {id: 8,  name: 'deed', health: 0, strength: 0, wisdom: 0, gold: -4, img:'deed.png'},
-    {id: 9,  name: 'empty', health: 0, strength: 0, wisdom: 0, gold: 0, img:'empty.png'},
-    {id: 10, name: 'fire poker', health: 0, strength: 2, wisdom: 0, gold: 0, img:'fire_poker.png'},
-    {id: 11, name: 'ice shard', health: 0, strength: 2, wisdom: 0, gold: 0, img:'ice_shard.png'},
-    {id: 12, name: 'pearls', health: 0, strength: 0, wisdom: 0, gold: 3, img:'pearls.png'},
-    {id: 13, name: 'ring', health: 0, strength: 1, wisdom: 0, gold: 2, img:'ring.png'},
-    {id: 14, name: 'leather vest', health: 4, strength: 0, wisdom: 0, gold: 0, img:'vest.png'},
-    {id: 15, name: 'brass knuckles', health: 0, strength: 2, wisdom: 0, gold: 0, img:'knuckles.png'},
-    {id: 16, name: 'fake beard', health: 0, strength: 0, wisdom: 2, gold: 0, img:'beard.png'},
+    {id: 0,  name: 'revolver',          health: 0, strength: 3, wisdom: 0, gold: 0, img:'revolver.png'},
+    {id: 1,  name: 'beer',              health: 3, strength: 0, wisdom: -2, gold: 0, img:'beer.png'},
+    {id: 2,  name: 'dagger',            health: 0, strength: 2, wisdom: 0, gold: 0, img:'dagger.png'},
+    {id: 3,  name: 'pistol',            health: 0, strength: 3, wisdom: 0, gold: 0, img:'pistol.png'},
+    {id: 4,  name: 'hat',               health: 2, strength: 0, wisdom: 0, gold: 0, img:'hat.png'},
+    {id: 5,  name: 'glasses',           health: 1, strength: 0, wisdom: 1, gold: 0, img:'glasses.png'},
+    {id: 6,  name: 'book',              health: 0, strength: 0, wisdom: 3, gold: 0, img:'book.png'},
+    {id: 7,  name: 'rotten apple',      health: -2, strength: 0, wisdom: 0, gold: 0, img:'apple.png'},
+    {id: 8,  name: 'deed',              health: 0, strength: 0, wisdom: 0, gold: -4, img:'deed.png'},
+    {id: 9,  name: 'empty',             health: 0, strength: 0, wisdom: 0, gold: 0, img:'empty.png'},
+    {id: 10, name: 'fire poker',        health: 0, strength: 2, wisdom: 0, gold: 0, img:'fire_poker.png'},
+    {id: 11, name: 'ice shard',         health: 0, strength: 2, wisdom: 0, gold: 0, img:'ice_shard.png'},
+    {id: 12, name: 'pearls',            health: 0, strength: 0, wisdom: 0, gold: 3, img:'pearls.png'},
+    {id: 13, name: 'ring',              health: 0, strength: 1, wisdom: 0, gold: 2, img:'ring.png'},
+    {id: 14, name: 'leather vest',      health: 4, strength: 0, wisdom: 0, gold: 0, img:'vest.png'},
+    {id: 15, name: 'brass knuckles',    health: 0, strength: 2, wisdom: 0, gold: 0, img:'knuckles.png'},
+    {id: 16, name: 'fake beard',        health: 0, strength: 0, wisdom: 2, gold: 0, img:'beard.png'},
 ]; // all collectible items
 const inventory_xpos = 153; // px position to start inventory boxes
 const inventory_ypos = 24;  // " "
@@ -150,6 +154,9 @@ function preload() {
     for(let i=2; i<chpt_cards.length; i++){ // skip first two chapters (templates)
         append(chpt_images, loadImage('Images/Chapters/'+chpt_cards[i].img)); // load each chapter image
     }
+    for(let i=0; i<boss_chapters.length; i++){
+        append(boss_images, loadImage('Images/Boss/'+boss_chapters[i].img)); // load each chapter image
+    }
     for(let i=0; i<items.length; i++){ 
         append(item_images, loadImage('Images/Items/'+items[i].img)); // load each item image
     }
@@ -161,7 +168,6 @@ function preload() {
     main_txt_font = loadFont('Fonts/Tiny5-Regular.ttf'); // used for GUI, chapter prompts,chapter options, etc.
     title_txt_font = loadFont('Fonts/Sancreek-Regular.ttf'); // used for title screen options
 }
-
 function setup() {
     // General settings
     frameRate(30); 
@@ -223,7 +229,6 @@ function fy_shuffle(array, array2) {
         array2[index] = temp2;
     }
 }
-
 function shuffle_chpts(){
     // Create chapter order for game
 
@@ -251,28 +256,14 @@ function shuffle_chpts(){
         j=j+1; // increase search count to prevent endless recursion
     }
 
-    /*
-    // Add boss chapter
-    var rnd_chpts_2 = shuffle(chpt_cards); // reshuffle chapters
-    for(var k=0; k < rnd_chpts_2.length; k++){
-        if(rnd_chpts_2[k].type == 'Boss'){ // check if boss chapter
-            append(journey,rnd_chpts_2[k]);
-            break;
-        }
-    }
-
-    // Add null chapter (prevents issues on last chapter)
-    append(journey, chpt_cards[0]);
-    */
-
     // Add boss chapters
     for(var k=0; k<boss_chapters.length; k++){
         append(journey,boss_chapters[k]);
     }
 
     // Set chapter (testing purposes)
-    let chpt_id = 25; // chapter to start with 
-    journey[0] = chpt_cards[chpt_id + 1]; 
+    //let chpt_id = 1; // chapter to start with 
+    //journey[0] = chpt_cards[chpt_id + 1]; 
 
 
 }
@@ -288,7 +279,6 @@ function windowResized() {
     set_scale();
 
 }
-
 function set_scale() {
     // Determine game scale based on orientation and padding
     let win_ar = w_win / h_win; // window aspect ratio
@@ -360,12 +350,19 @@ function draw() {
         // Reshuffle chapters
         shuffle_chpts();
 
+        // Shuffle death message
+        death_messages = shuffle(death_messages);
+
+        // Shuffle character order
+        fy_shuffle(roles, role_images);
+
         // Prevent further reset
         refresh_page = false; 
     }
 
     // Update mouse state
     mouse_state[0] = mouse_state[1];
+
 }
 
 function draw_scale() {
@@ -406,13 +403,13 @@ function color_pallette(){
         car_past_color = '#a3a3a3';   // color for past cars/chapters for progress bar
     }
     else if(color_mode == 'dark') {
-        window_bkgd = '#080f14';      // color around screen
-        screen_bkgd = '#14120e';      // game background color
+        window_bkgd = '#182524';      // color around screen
+        screen_bkgd = '#231c14';      // game background color
         title_bkgd = screen_bkgd;     // title screen background color
         console_border = '#693c0d';   // border around game console
         txt_color = '#d6d9b4';        // main text and border colors 
         img_fore = txt_color;         // color to tint image line sketches
-        img_bkgd = '#211d15';       // color behind image
+        img_bkgd = '#1b150e';       // color behind image
         opt_bkgd_u = screen_bkgd;     // bar behind option text (unhighlighted)
         opt_bkgd_h = img_bkgd;        // bar behind option text (highlighted)
         car_unpl_color = '#525252';   // color for unplayed cars/chapters for progress bar
@@ -570,7 +567,6 @@ function title_screen(){
     text('Credits', pw/2, button_bounds[2]-3);   
 
 }
-
 function settings(){
     // Set all game settings/options
 
@@ -631,7 +627,6 @@ function settings(){
     }
 
 }
-
 function credits(){
     // Credits screen
 
@@ -664,7 +659,6 @@ function credits(){
     } // return to title screen on mouse release
 
 }
-
 function character_selection(){
     // Allow for role/character selection before starting game
 
@@ -687,7 +681,8 @@ function character_selection(){
     // get min/max stat sums
     for(let i=0; i<roles.length; i++){
         var a = roles[i];
-        var sum = 1.5*a.health + 1.2*a.strength + 1.0*a.wisdom + 0.6*a.gold + 3.5*a.inventory_size; // assume difficulty is proportional to linear combination of stats, highest to lowest weight: inventory, strength, health, wisdom, gold
+        //var sum = 1.5*a.health + 1.2*a.strength + 1.0*a.wisdom + 0.6*a.gold + 3.5*a.inventory_size; // assume difficulty is proportional to linear combination of stats, highest to lowest weight: inventory, strength, health, wisdom, gold
+        var sum = min(a.health, a.strength, a.wisdom, a.gold) + (a.health + a.strength + a.wisdom + a.gold + a.inventory_size)/5; // assume difficulty is based on average stat and min stat
         role_stat_sums = append(role_stat_sums, sum); 
     }
     var min_sum_stats = min(role_stat_sums); // set bounds for difficulties
@@ -813,7 +808,7 @@ function GUI() {
     // Game title
     fill(txt_color); noStroke();
     textSize(txt_sz); textAlign(LEFT, BASELINE); textFont(main_txt_font);
-    text('Derailed by Andrew Smith', inventory_xpos,     txt_y_pos_0);
+    text('Derailed ' + game_version, inventory_xpos,     txt_y_pos_0);
 
     // Inventory title
     fill(txt_color); noStroke();
@@ -964,7 +959,6 @@ function GUI() {
     }
     
 }
-
 function dsp_chpt() {
     // Displays chapter image and prompt text
 
@@ -974,8 +968,12 @@ function dsp_chpt() {
     let title_y_pos = 64; // bottom of title block
     fill(img_bkgd); noStroke(); rect(6,title_y_pos,img_wd,img_ht); // background behind image
     tint(img_fore); noFill(); noStroke();
-    image(chpt_images[curr_chpt.id-1],6,title_y_pos,img_wd,img_ht); // display image
-
+    if(chpt-10 <  num_chpts) { // chapter image
+        image(chpt_images[curr_chpt.id-1],6,title_y_pos,img_wd,img_ht); // display image
+    } 
+    if(chpt-10 >= num_chpts) { // boss image
+        image(boss_images[curr_chpt.id],6,title_y_pos,img_wd,img_ht); // display image
+    } 
 
     // Image border
     noFill(); stroke(txt_color); strokeWeight(1); 
@@ -1234,11 +1232,11 @@ function dsp_chpt() {
         }
         if(curr_chpt.action_a_failure[3] != ''){ // alt text, assume only one stat change
             option_af_text += curr_chpt.action_a_failure[3];
-            if(curr_chpt.action_a_failure[2][0] > 0){ option_af_text += " (+" + abs(curr_chpt.action_a_failure[2][0]) + " HEALTH)."} if(curr_chpt.action_a_failure[2][0] < 0){ option_af_text += " (-" + abs(curr_chpt.action_a_failure[2][0]) + " HEALTH)."}
-            if(curr_chpt.action_a_failure[2][1] > 0){ option_af_text += " (+" + abs(curr_chpt.action_a_failure[2][1]) + " STRENGTH)."} if(curr_chpt.action_a_failure[2][1] < 0){ option_af_text += " (-" + abs(curr_chpt.action_a_failure[2][1]) + " STRENGTH)."}
-            if(curr_chpt.action_a_failure[2][2] > 0){ option_af_text += " (+" + abs(curr_chpt.action_a_failure[2][2]) + " WISDOM)."} if(curr_chpt.action_a_failure[2][2] < 0){ option_af_text += " (-" + abs(curr_chpt.action_a_failure[2][2]) + " WISDOM)."}
-            if(curr_chpt.action_a_failure[2][3] > 0){ option_af_text += " (+" + abs(curr_chpt.action_a_failure[2][3]) + " GOLD)."} if(curr_chpt.action_a_failure[2][3] < 0){ option_af_text += " (-" + abs(curr_chpt.action_a_failure[2][3]) + " GOLD)."}
-            if(curr_chpt.action_a_failure[2][4] > 0){ option_af_text += " (+" + abs(curr_chpt.action_a_failure[2][4]) + " INVENTORY)."} if(curr_chpt.action_a_failure[2][4] < 0){ option_af_text += " (-" + abs(curr_chpt.action_a_failure[2][4]) + " INVENTORY)."}
+            if(curr_chpt.action_a_failure[2][0] > 0){ option_af_text += " (+" + abs(curr_chpt.action_a_failure[2][0]) + " HEALTH). "} if(curr_chpt.action_a_failure[2][0] < 0){ option_af_text += " (-" + abs(curr_chpt.action_a_failure[2][0]) + " HEALTH). "}
+            if(curr_chpt.action_a_failure[2][1] > 0){ option_af_text += " (+" + abs(curr_chpt.action_a_failure[2][1]) + " STRENGTH). "} if(curr_chpt.action_a_failure[2][1] < 0){ option_af_text += " (-" + abs(curr_chpt.action_a_failure[2][1]) + " STRENGTH). "}
+            if(curr_chpt.action_a_failure[2][2] > 0){ option_af_text += " (+" + abs(curr_chpt.action_a_failure[2][2]) + " WISDOM). "} if(curr_chpt.action_a_failure[2][2] < 0){ option_af_text += " (-" + abs(curr_chpt.action_a_failure[2][2]) + " WISDOM). "}
+            if(curr_chpt.action_a_failure[2][3] > 0){ option_af_text += " (+" + abs(curr_chpt.action_a_failure[2][3]) + " GOLD). "} if(curr_chpt.action_a_failure[2][3] < 0){ option_af_text += " (-" + abs(curr_chpt.action_a_failure[2][3]) + " GOLD). "}
+            if(curr_chpt.action_a_failure[2][4] > 0){ option_af_text += " (+" + abs(curr_chpt.action_a_failure[2][4]) + " INVENTORY). "} if(curr_chpt.action_a_failure[2][4] < 0){ option_af_text += " (-" + abs(curr_chpt.action_a_failure[2][4]) + " INVENTORY). "}
         }
         if(curr_chpt.action_a_prompt[1] == 'Combat'){
             option_af_text = option_af_text.slice(0,-2); // remove period
@@ -1302,11 +1300,11 @@ function dsp_chpt() {
         }
         if(curr_chpt.action_b_success[3] != ''){ // alt text, assume only one stat change
             option_bs_text += curr_chpt.action_b_success[3];
-            if(curr_chpt.action_b_success[2][0] > 0){ option_bs_text += " (+" + abs(curr_chpt.action_b_success[2][0]) + " HEALTH)."} if(curr_chpt.action_b_success[2][0] < 0){ option_bs_text += " (-" + abs(curr_chpt.action_b_success[2][0]) + " HEALTH)."}
-            if(curr_chpt.action_b_success[2][1] > 0){ option_bs_text += " (+" + abs(curr_chpt.action_b_success[2][1]) + " STRENGTH)."} if(curr_chpt.action_b_success[2][1] < 0){ option_bs_text += " (-" + abs(curr_chpt.action_b_success[2][1]) + " STRENGTH)."}
-            if(curr_chpt.action_b_success[2][2] > 0){ option_bs_text += " (+" + abs(curr_chpt.action_b_success[2][2]) + " WISDOM)."} if(curr_chpt.action_b_success[2][2] < 0){ option_bs_text += " (-" + abs(curr_chpt.action_b_success[2][2]) + " WISDOM)."}
-            if(curr_chpt.action_b_success[2][3] > 0){ option_bs_text += " (+" + abs(curr_chpt.action_b_success[2][3]) + " GOLD)."} if(curr_chpt.action_b_success[2][3] < 0){ option_bs_text += " (-" + abs(curr_chpt.action_b_success[2][3]) + " GOLD)."}
-            if(curr_chpt.action_b_success[2][4] > 0){ option_bs_text += " (+" + abs(curr_chpt.action_b_success[2][4]) + " INVENTORY)."} if(curr_chpt.action_b_success[2][4] < 0){ option_bs_text += " (-" + abs(curr_chpt.action_b_success[2][4]) + " INVENTORY)."}
+            if(curr_chpt.action_b_success[2][0] > 0){ option_bs_text += " (+" + abs(curr_chpt.action_b_success[2][0]) + " HEALTH). "} if(curr_chpt.action_b_success[2][0] < 0){ option_bs_text += " (-" + abs(curr_chpt.action_b_success[2][0]) + " HEALTH). "}
+            if(curr_chpt.action_b_success[2][1] > 0){ option_bs_text += " (+" + abs(curr_chpt.action_b_success[2][1]) + " STRENGTH). "} if(curr_chpt.action_b_success[2][1] < 0){ option_bs_text += " (-" + abs(curr_chpt.action_b_success[2][1]) + " STRENGTH). "}
+            if(curr_chpt.action_b_success[2][2] > 0){ option_bs_text += " (+" + abs(curr_chpt.action_b_success[2][2]) + " WISDOM). "} if(curr_chpt.action_b_success[2][2] < 0){ option_bs_text += " (-" + abs(curr_chpt.action_b_success[2][2]) + " WISDOM). "}
+            if(curr_chpt.action_b_success[2][3] > 0){ option_bs_text += " (+" + abs(curr_chpt.action_b_success[2][3]) + " GOLD). "} if(curr_chpt.action_b_success[2][3] < 0){ option_bs_text += " (-" + abs(curr_chpt.action_b_success[2][3]) + " GOLD). "}
+            if(curr_chpt.action_b_success[2][4] > 0){ option_bs_text += " (+" + abs(curr_chpt.action_b_success[2][4]) + " INVENTORY). "} if(curr_chpt.action_b_success[2][4] < 0){ option_bs_text += " (-" + abs(curr_chpt.action_b_success[2][4]) + " INVENTORY). "}
         }
     }
     if(curr_chpt.action_b_success[0] == 'Continue'){
@@ -1449,7 +1447,6 @@ function dsp_chpt() {
     dsp_chpt_2(); 
 
 }
-
 function dsp_chpt_2(){
     // Overlay options with additional text for rolling/combat/item events
 
@@ -1606,7 +1603,6 @@ function dsp_chpt_2(){
 
     }
 }
-
 function dsp_chpt_text(input_text){
     // Converts option a, success, failure, option b, success, failure text with stat names color changed
 
@@ -1755,7 +1751,6 @@ function dsp_chpt_text(input_text){
         }
     }
 }
-
 function capitalize_first_word(text){
     // Capitalizes first word of string
     let text_split = text.split(" "); // split by spaces
@@ -2094,7 +2089,6 @@ function play_chpt(){
     
 
 }
-
 function roll(roll_stat, roll_min, roll_max, roll_type){
     // Shows roll animation and determines if player passes roll check
     // roll_stat = stat to roll
@@ -2136,6 +2130,14 @@ function roll(roll_stat, roll_min, roll_max, roll_type){
             // Edge case -> players stats guarentee success
             if(stat_val <= roll_max && roll_max <= 12 && roll_min <= 1){
                 if(roll_type == 'Normal Continue' || roll_type == 'Normal Item'){ // only applies to non-combat rolls
+                    crs_pos_x = stat_val - 1;   // roll results = maximum stat value (arbitrary)
+                    roll_state = 2;             // skip rolling animation and show blinking result
+                }
+            }
+
+            // Edge case -> same as above for combat rolls
+            if(sum_rolls + 1 >= roll_min){ // only one more is needed to continue
+                if(roll_type == 'Combat Continue' || roll_type == 'Combat Item'){ // continue on combat roll
                     crs_pos_x = stat_val - 1;   // roll results = maximum stat value (arbitrary)
                     roll_state = 2;             // skip rolling animation and show blinking result
                 }
@@ -2270,7 +2272,6 @@ function mousePressed(){
     // Update mouse state
     mouse_state[1] = 1; 
 }
-
 function mouseReleased(){
     // Update mouse state
     mouse_state[1] = 0; 
@@ -2391,6 +2392,19 @@ function inventory_update(){
 
 
 
+/*
+// Dev tools
+var temp_chpt_counter = 1 - 1; 
+function keyReleased() {
+    if (key === 's') {
+        temp_chpt_counter += 1;
+        journey[0] = chpt_cards[temp_chpt_counter + 1];
+    }
+}
+*/
+
+
+
 // ======================================================================================================
 
 var death_messages = [
@@ -2443,7 +2457,7 @@ const chpt_cards = [
     {
         id: 1,
         type: 'Normal', 
-        prompt: 'You step into a quiet train car with a deputy asleep with his head against the window. His hat covers his eyes and you can see his gun sticking out from the holster on his side.',
+        prompt: 'You step into a quiet train car with a deputy fast asleep beside the window. Between the loud sawing of lumber and sheep baa\'ing, you can see his gun sticking out from the holster on his hip.',
         img: '01.png',
         min_level: 0.00, 
         max_level: 1.00, 
@@ -2457,7 +2471,7 @@ const chpt_cards = [
     {
         id: 2,
         type: 'Normal', 
-        prompt: 'A group of young ranchers are crowded around a table covered in playing cards and beer. Between their laughter and slurred singing of Oh! Susanna, one of them asks you to join.',
+        prompt: 'A group of young ranchers are crowded around a table covered in playing cards and beer. Amidst their laughter and slurred singing of \"Oh! Susanna,\" one of them asks you to join.',
         img: '02.png',
         min_level: 0.00, 
         max_level: 1.00, 
@@ -2517,10 +2531,10 @@ const chpt_cards = [
         img: '02.png',
         min_level: 0.00, 
         max_level: 1.00, 
-        action_a_prompt: ['Bet low', 'Roll', 'Gold', 0, 0, 3, [0,0,0,0,0]],   
+        action_a_prompt: ['Bluff', 'Roll', 'Health', 0, 4, 99, [0,0,0,0,0]],   
         action_a_success: ['Stat',0,[0,0,0,3,0],'Win back bet'],  
         action_a_failure: ['Stat',0,[0,0,0,-3,0],'Lose bet'], 
-        action_b_prompt: ['Bet high', 'Roll', 'Gold', 0, 3, 99, [0,0,0,0,0]],     
+        action_b_prompt: ['Cheat', 'Roll', 'Wisdom', 0, 4, 99, [0,0,0,0,0]],     
         action_b_success: ['Stat',0,[0,0,0,5,0],'Win entire pot'],            
         action_b_failure: ['Stat',0,[0,0,0,-5,0],'Lose bet'] 
     },
@@ -2541,7 +2555,7 @@ const chpt_cards = [
     {
         id: 8,
         type: 'Normal', 
-        prompt: 'You enter a car filled with mirrors, a disorienting maze reflecting into your heart and soul. You are soon unable to determine which set of eyes are yours or the mirrors, and which direction leads to the exit.',
+        prompt: 'You enter a car filled with mirrors, a disorienting maze reflecting into your heart and soul. You are soon unable to determine which set of eyes are yours or the mirror\'s, and which direction leads to the exit.',
         img: '08.png',
         min_level: 0.00, 
         max_level: 1.00, 
@@ -2570,7 +2584,7 @@ const chpt_cards = [
         id: 10,
         type: 'Normal', 
         prompt: 'A line of passengers are waiting in front of a doctor. Someone nearby says to you, \"The doctor says there\'s a cholera outbreak so we\'ll all need to get checked and maybe buy some medicine on board.\"',
-        img: 'test.png',
+        img: '10.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Check-up', 'Roll', 'Health', 5, 4, 99, [0,0,0,0,0]],   
@@ -2584,7 +2598,7 @@ const chpt_cards = [
         id: 11,
         type: 'Normal', 
         prompt: 'All laterns in the car blow out with a chilling gust of wind as three floating bodies of undead soldiers enter. The apparitions slowly turn their heads towards you and reach out in unison with trembling hands.',
-        img: 'test.png',
+        img: '11.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Fight', 'Combat', 'Strength', 9, 4, 99, [0,0,0,0,0]],   
@@ -2597,7 +2611,7 @@ const chpt_cards = [
     {
         id: 12,
         type: 'Normal', 
-        prompt: 'Steamed vegetables, salted meats, fresh tomatoes, and a pantry full of aromas flood the car as you enter the dining car. You collapse into the closest seat and the chef asks for your order.',
+        prompt: 'Steamed vegetables, salted meats, fresh tomatoes, and a pantry full of aromas flood the car as you enter the dining car. You collapse into the closest seat as the chef asks for your order.',
         img: '12.png',
         min_level: 0.00, 
         max_level: 1.00, 
@@ -2612,7 +2626,7 @@ const chpt_cards = [
         id: 13,
         type: 'Normal', 
         prompt: 'A mourning widow dressed in black drops her suitcase at the sight of you and screams in agony. Grabbing a nearby knife she charges you yelling, \"It\'s you! You\'re the one that killed my husband!\"',
-        img: 'test.png',
+        img: '13.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Disarm her', 'Roll', 'Strength', 9, 5, 99, [0,0,0,0,0]],   
@@ -2626,7 +2640,7 @@ const chpt_cards = [
         id: 14,
         type: 'Normal', 
         prompt: 'You trip over a large suitcase partially blocking the aisle spreading its contents on the floor. Between the scattered clothing you find the stationery, textbooks, and instruments belonging to a history professor.',
-        img: 'test.png',
+        img: '14.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Take glasses', 'Item', 'Strength', 5, 5, 99, [0,0,0,0,0]],   
@@ -2640,7 +2654,7 @@ const chpt_cards = [
         id: 15,
         type: 'Normal', 
         prompt: 'The train hits a bumpy patch of track as you attempt to make your way through a crowded car. After you push your way to the other end, you realize someone had picked your pockets.',
-        img: 'test.png',
+        img: '15.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Continue', 'Stat', 'Strength', 5, 5, 99, [0,0,0,-2,0]],   
@@ -2653,22 +2667,22 @@ const chpt_cards = [
     {
         id: 16,
         type: 'Normal', 
-        prompt: 'Several passengers are lounging in the evening light of the smoking car while playing poker over a cigar. You grab a seat at an empty stool beside them to join in. The action falls to you.',
+        prompt: 'Several passengers are lounging in the evening light of the smoking car while playing poker over cigars. You grab a seat at an empty stool beside them to join in. The action falls to you.',
         img: '02.png',
         min_level: 0.00, 
         max_level: 1.00, 
-        action_a_prompt: ['Check', 'Roll', 'Gold', 5, 3, 99, [0,0,0,0,0]],   
+        action_a_prompt: ['Check', 'Roll', 'Wisdom', 5, 3, 99, [0,0,0,0,0]],   
         action_a_success: ['Stat',0,[0,0,0,+2,0],'Win pot'],  
         action_a_failure: ['Stat',0,[0,0,0,-3,0],'Lose your buy-in'], 
-        action_b_prompt: ['Raise', 'Roll', 'Gold', 6, 4, 99, [0,0,0,0,0]],     
+        action_b_prompt: ['Raise', 'Roll', 'Wisdom', 6, 5, 99, [0,0,0,0,0]],     
         action_b_success: ['Stat',0,[0,0,0,+6,0],'Win pot'],            
         action_b_failure: ['Stat',0,[0,0,0,-4,0],'Lose your bet'] 
     },
     {
         id: 17,
         type: 'Normal', 
-        prompt: 'You look outside to see the passing landscape and notice a young boy leaning out the window to do the same. He leans further as the train hits a bump and begins to lose his balance.',
-        img: 'test.png',
+        prompt: 'You look outside to see the passing landscape and notice a young boy leaning out the window to do the same. He leans too far as the train hits a bump, just barely catching the ledge.',
+        img: '17.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Save', 'Roll', 'Strength', 5, 5, 99, [0,0,0,0,0]],   
@@ -2682,7 +2696,7 @@ const chpt_cards = [
         id: 18,
         type: 'Normal', 
         prompt: 'You find a pile of scattered sewing supplies laid out on the table in front of you, giving you the chance to fix your ill-fitted and torn clothing.',
-        img: 'test.png',
+        img: '18.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Mend shirt', 'Roll', 'Wisdom', 5, 2, 99, [0,0,0,0,0]],   
@@ -2696,7 +2710,7 @@ const chpt_cards = [
         id: 19,
         type: 'Normal', 
         prompt: 'An unaccompanied plate of food is lying at your seat, including an old looking apple. Your stomach growls with intense hunger as you take a bite before noticing a foul taste.',
-        img: 'test.png',
+        img: '19.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Eat', 'Item', 'Wisdom', 7, 3, 99, [0,0,0,0,0]],   
@@ -2710,13 +2724,13 @@ const chpt_cards = [
         id: 20,
         type: 'Normal', 
         prompt: 'An angry mob is surrounding a lady and accusing her of stealing gold from her husband. Trying to calm the crowd down from frontier justice, you talk them into holding a makeshift trial.',
-        img: 'test.png',
+        img: '20.png',
         min_level: 0.00, 
         max_level: 1.00, 
-        action_a_prompt: ['Defend', 'Combat', 'Wisdom', 3, 4, 99, [0,0,0,0,0]],   
+        action_a_prompt: ['Defend', 'Combat', 'Wisdom', 6, 4, 99, [0,0,0,0,0]],   
         action_a_success: ['Stat',0,[+2,0,+2,0,0],'Win trial'],  
         action_a_failure: ['Stat',0,[0,-1,0,0,0],''], 
-        action_b_prompt: ['Accuse', 'Combat', 'Wisdom', 3, 4, 99, [0,0,0,0,0]],     
+        action_b_prompt: ['Accuse', 'Combat', 'Wisdom', 6, 4, 99, [0,0,0,0,0]],     
         action_b_success: ['Stat',0,[0,0,+1,+3,0],'Win trial'],            
         action_b_failure: ['Stat',0,[0,-1,0,0,0],''] 
     },
@@ -2724,7 +2738,7 @@ const chpt_cards = [
         id: 21,
         type: 'Normal', 
         prompt: 'You enter the dark luggage car, covered floor to ceiling in suitcases, cobwebs, and unbeknownst to you, rattlesnacks waiting to attack. As you navigate the maze of luggage, you feel something on your shoulder.',
-        img: 'test.png',
+        img: '21.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Run', 'Roll', 'Strength', 3, 3, 99, [0,0,0,0,0]],   
@@ -2738,7 +2752,7 @@ const chpt_cards = [
         id: 22,
         type: 'Normal', 
         prompt: 'An eerie silence falls over the car as you feel a dark weight bearing down on your soul. The windows frost over and the white breath is sucked out of your lungs as the cold seems to freeze you in place.',
-        img: 'test.png',
+        img: '22.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Struggle', 'Roll', 'Strength', 3, 4, 99, [0,0,0,0,0]],   
@@ -2752,7 +2766,7 @@ const chpt_cards = [
         id: 23,
         type: 'Normal', 
         prompt: 'A roaring cry of flames descend over the car as you feel a dark weight bearing down on your soul. The windows steam up and the breath is sucked out of your lungs as the heat seems to melt you in place.',
-        img: 'test.png',
+        img: '23.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Escape', 'Roll', 'Strength', 3, 4, 99, [0,0,0,0,0]],   
@@ -2765,8 +2779,8 @@ const chpt_cards = [
     {
         id: 24,
         type: 'Normal', 
-        prompt: 'A young man gathers a crowd at the bar and is beginning to make a toast. \" My wife just found out that we\'re having a baby, I\'m going to be a dad!\" The crowd cheers as he pours a round of drinks. ',
-        img: 'test.png',
+        prompt: 'A young man gathers a crowd at the bar and is beginning to make a toast. \"My wife just found out that we\'re having a baby, I\'m going to be a dad!\" The crowd cheers as he pours a round of drinks.',
+        img: '24.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Celebrate', 'Stat', 'Strength', 3, 4, 99, [1,0,0,0,0]],   
@@ -2780,7 +2794,7 @@ const chpt_cards = [
         id: 25,
         type: 'Normal', 
         prompt: 'After a drunken night at the bar, you awaken beside a freshly signed deed for a plot of land in the frontier. Small, arid, infertile, and most importantly, yours.',
-        img: 'test.png',
+        img: '25.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Continue', 'Item', 'Strength', 8, 4, 99, [1,0,0,0,0]],   
@@ -2793,8 +2807,8 @@ const chpt_cards = [
     {
         id: 26,
         type: 'Normal', 
-        prompt: 'You approach a figure seated across the aisle from you and as they turn around, you an undead body that looks eerily like you. It groans, \"I valued myself too much in my life, which do you value more?\"',
-        img: 'test.png',
+        prompt: 'You approach a figure seated across the aisle from you and as they turn around, you see an undead body that looks eerily like you. It groans, \"I valued myself too much in my life, which do you value more?\"',
+        img: '26.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Power', 'Stat', 'Strength', 8, 4, 99, [0,0,0,-1,0]],   
@@ -2808,7 +2822,7 @@ const chpt_cards = [
         id: 27,
         type: 'Normal', 
         prompt: 'The tracks echo into the night as you look out the star-illuminated window. To your horror, you see a phantom train just like yours, travelling out into the night above no tracks and carrying no passengers.',
-        img: 'test.png',
+        img: '27.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Continue', 'Stat', 'Strength', 8, 4, 99, [0,-1,0,0,0]],   
@@ -2822,7 +2836,7 @@ const chpt_cards = [
         id: 28,
         type: 'Normal', 
         prompt: 'You are startled by the running of a group of mischievous, rapscallion children through your car and into your back. You fall onto the floor and in getting up, you realize your pockets feel emptier than before.',
-        img: 'test.png',
+        img: '15.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Continue', 'Item', 'Strength', 9, 4, 99, [0,-1,0,0,0]],   
@@ -2836,13 +2850,13 @@ const chpt_cards = [
         id: 29,
         type: 'Normal', 
         prompt: 'Laughter and gaiety erupt in the passengers in front you for the performance of \"A Midsummer Night\'s Dream.\" Just as you find your seat, you overhear a few bounty hunters inquiring about your location.',
-        img: 'test.png',
+        img: '29.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Blend in', 'Roll', 'Wisdom', 9, 0, 4, [0,0,0,0,0]],   
         action_a_success: ['Item',16,[0,0,0,0,0],''],  
         action_a_failure: ['Stat',0,[-3,0,0,0,0],'Get caught'], 
-        action_b_prompt: ['Fight', 'Combat', 'Strength', 6, 3, 99, [0,0,0,0,0]],     
+        action_b_prompt: ['Fight', 'Combat', 'Strength', 7, 3, 99, [0,0,0,0,0]],     
         action_b_success: ['Continue',0,[0,0,0,0,0],''],            
         action_b_failure: ['Stat',0,[-1,0,0,0,0],''] 
     },
@@ -2850,7 +2864,7 @@ const chpt_cards = [
         id: 30,
         type: 'Normal', 
         prompt: 'The sleeper car jostles in the sun as you awaken to a rough night\'s sleep. Getting out of bed, you stumble into a large spider web and feel the sharp sting of a bite on your neck.',
-        img: 'test.png',
+        img: '30.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Suck venom', 'Roll', 'Health', 9, 4, 99, [0,0,0,0,0]],   
@@ -2864,35 +2878,35 @@ const chpt_cards = [
         id: 31,
         type: 'Normal', 
         prompt: 'A woman cloaked in a dark dress offers to give you a tarot reading. She is taken aback and says, \"Great power lies ahead of you, I see an empire of trade and tremendous political favor to come.\"',
-        img: 'test.png',
+        img: '31.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Thank her', 'Stat', 'Health', 9, 4, 99, [3,2,0,0,0]],   
         action_a_success: ['Continue',0,[0,0,0,0,0],''],  
         action_a_failure: ['Stat',0,[-3,0,0,0,0],''], 
-        action_b_prompt: ['Leave be', 'None', 'Health', 6, 2, 99, [0,0,0,0,0]],     
-        action_b_success: ['None',0,[-1,0,0,0,0],''],            
-        action_b_failure: ['Stat',0,[-2,0,0,0,0],''] 
+        action_b_prompt: ['Ask for more', 'Roll', 'Wisdom', 6, 4, 99, [0,0,0,0,0]],     
+        action_b_success: ['Stat',0,[4,3,0,0,0],''],            
+        action_b_failure: ['Stat',0,[0,-2,0,0,0],''] 
     },
     {
         id: 32,
         type: 'Normal', 
         prompt: 'A mysterious one-eyed sailor stops you in your tracks and says, \"I have a knack for sensing rough weather and in you, I see dark storm clouds coming overhead in your future.\"',
-        img: 'test.png',
+        img: '32.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Move on', 'Stat', 'Health', 9, 4, 99, [-1,-1,0,0,0]],   
         action_a_success: ['Continue',0,[0,0,0,0,0],''],  
         action_a_failure: ['Stat',0,[-3,0,0,0,0],''], 
-        action_b_prompt: ['Leave be', 'None', 'Health', 6, 2, 99, [0,0,0,0,0]],     
-        action_b_success: ['None',0,[-1,0,0,0,0],''],            
-        action_b_failure: ['None',0,[-2,0,0,0,0],''] 
+        action_b_prompt: ['Dispute', 'Roll', 'Wisdom', 6, 4, 99, [0,0,0,0,0]],     
+        action_b_success: ['Stat',0,[1,1,0,0,0],''],            
+        action_b_failure: ['Stat',0,[-2,-2,0,0,0],''] 
     },
     {
         id: 33,
         type: 'Normal', 
         prompt: 'An elderly man walks down the aisle carrying a tray with a strange set of powders and liquids in bottles. \"Love! Riches! All can be yours in a single dose!\"',
-        img: 'test.png',
+        img: '33.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Buy elixir', 'Stat', 'Health', 9, 4, 99, [1,0,0,-1,0]],   
@@ -2905,14 +2919,14 @@ const chpt_cards = [
     {
         id: 34,
         type: 'Normal', 
-        prompt: 'You stumble into the boiler room where hot pipes and steam jut out into your way. A bump of the tracks causes your coat to get stuck on the instruments, pulling you towards the red-hot steel by your side.',
-        img: 'test.png',
+        prompt: 'You stumble into the boiler room where hot pipes and steam jut out into your way. A bump in the tracks causes your coat to get stuck on the instruments, pulling you towards the red-hot steel by your side.',
+        img: '34.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Brace yourself', 'Roll', 'Strength', 9, 0, 4, [0,0,0,0,0]],   
         action_a_success: ['Continue',0,[0,0,0,0,0],''],  
         action_a_failure: ['Stat',0,[-3,0,0,0,0],'Touch scalding metal'], 
-        action_b_prompt: ['Leave coat', 'Roll', 'Strength', 6, 0, 4, [0,0,0,0,0]],     
+        action_b_prompt: ['Shed coat', 'Roll', 'Strength', 6, 0, 4, [0,0,0,0,0]],     
         action_b_success: ['Stat',0,[0,0,0,0,-1],'Lose item in pocket'],            
         action_b_failure: ['Stat',0,[-2,0,0,0,0],'Fall onto pipes'] 
     },
@@ -2920,7 +2934,7 @@ const chpt_cards = [
         id: 35,
         type: 'Normal', 
         prompt: 'The walls are lined in floral wallpaper and the ceiling in glass chandeliers. The first-class dining car is filled with ostentatious furnishings and costumes, some of whom have more than they need.',
-        img: 'test.png',
+        img: '35.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Steal pearls', 'Roll', 'Strength', 9, 0, 5, [0,0,0,0,0]],   
@@ -2933,8 +2947,8 @@ const chpt_cards = [
     {
         id: 36,
         type: 'Normal', 
-        prompt: 'Two gnarly men in dark clothing block both ends of the aisle. From a whiskey-drenched breath, one of them demands you empty out your pockets and not to cry for help. ',
-        img: 'test.png',
+        prompt: 'Two gnarly men in dark clothing block both ends of the aisle. From whiskey-drenched breath, one of them demands you to empty out your pockets and not to cry for help. ',
+        img: '36.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Fight blond', 'Combat', 'Strength', 7, 0, 99, [0,0,0,0,0]],   
@@ -2948,7 +2962,7 @@ const chpt_cards = [
         id: 37,
         type: 'Normal', 
         prompt: 'The most beautiful person you have ever laid your eyes upon is seated by the window. To your suprise, they ask you to sit and despite the amazing view, they can\'t take their eyes off you.',
-        img: 'test.png',
+        img: '37.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Compliment', 'Combat', 'Health', 6, 0, 99, [0,0,0,0,0]],   
@@ -2962,7 +2976,7 @@ const chpt_cards = [
         id: 38,
         type: 'Normal', 
         prompt: 'A young boy is sitting by himself, shivering from the cold of the open windows and clutching his stomach from having missed the breakfast service that morning.',
-        img: 'test.png',
+        img: '38.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Give jacket', 'Stat', 'Health', 6, 0, 99, [0,0,0,0,-1]],   
@@ -2976,7 +2990,7 @@ const chpt_cards = [
         id: 39,
         type: 'Normal', 
         prompt: 'A lady cloaked in darkness stares deep into your soul and surfaces your worst fears. With outstretched arms, the windows fall open and a swarm of bats flood the car and fly towards your direction.',
-        img: 'test.png',
+        img: '39.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Kill bats', 'Combat', 'Strength', 8, 0, 99, [0,0,0,0,0]],   
@@ -2990,7 +3004,7 @@ const chpt_cards = [
         id: 40,
         type: 'Normal', 
         prompt: 'A group of tired coal miners are huddled around a table discussing plans for unionizing. As you eavesdrop on both sides of the debate, a fever of emotion takes over and you decide to join the debate.',
-        img: 'test.png',
+        img: '40.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Use logos', 'Roll', 'Wisdom', 0, 3, 99, [0,0,0,0,0]],   
@@ -3008,8 +3022,8 @@ const boss_chapters = [
     {
         id: 0,
         type: 'Boss', 
-        prompt: 'You creak open the door to the hot inferno of the engine room where a lifeless void stands, extending its skeletal hands under a tattered cloak of dust and silver. \n \"I am Beelzebub, the Lord of the Flies and your ferryman to Hell.\" A maniacal laughter roars as darkness surrounds the room and your feet become shackled by chains on the ground.',
-        img: 'test.png',
+        prompt: 'You creak open the door to the hot inferno of the engine room where a lifeless void stands, extending its skeletal hands under a tattered cloak of dust and silver.\n\"I am Beelzebub, the Lord of the Flies and your ferryman to Hell.\" A maniacal laughter roars as darkness surrounds the room and your feet become shackled by chains on the ground.',
+        img: 'boss.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Continue', 'None', 'Health', 6, 0, 99, [0,0,0,0,0]],   
@@ -3022,8 +3036,8 @@ const boss_chapters = [
     {
         id: 1,
         type: 'Boss', 
-        prompt: '\"Scores I have taken lamenting over a fool\'s gold. Tell me, does it mean as much to you as it did to them?\" \nPrying open the iron floor boards, a hoard of hungry demons claw their way up to your sides, holding out a beggar\'s hand and crying \"More, More\" in a shrill tone.',
-        img: 'test.png',
+        prompt: '\"Scores I have taken lamenting over a fool\'s gold. Tell me, does it mean as much to you as it did to them?\"\nPrying open the iron floor boards, a hoard of hungry demons claw their way up to your sides, holding out a beggar\'s hand and crying \"More, More\" in a shrill tone.',
+        img: 'boss.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Continue', 'None', 'Gold', 10, 0, 99, [0,0,0,0,0]],   
@@ -3035,9 +3049,9 @@ const boss_chapters = [
     },
     {
         id: 2,
-        type: ' ', 
-        prompt: '\"I have seen empires crumble over wars of attrition, the dead wanting to conquer the world but unable to conquer themself. Will you trade your power to finally learn?\" \nThe cold, bony fingers of Beelzebub touch forehead and flood your vision with intense flames, plagues, death, and despair. Your knees fall weak to the horror as you fight to hold on to your last ounce of sanity.',
-        img: 'test.png',
+        type: 'Boss', 
+        prompt: '\"I have seen empires crumble over wars of attrition, the dead wanting to conquer the world but unable to conquer themselves. Will you trade your power to finally learn?\"\nThe cold, bony fingers of Beelzebub touch your forehead and flood your vision with intense flames, plagues, death, and despair. Your knees fall weak to the horror as you fight to hold on to your last ounce of sanity.',
+        img: 'boss.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Continue', 'None', 'Health', 6, 0, 99, [0,0,0,0,-1]],   
@@ -3051,7 +3065,7 @@ const boss_chapters = [
         id: 3,
         type: 'Boss', 
         prompt: 'You grow faint from the previous trials and see the smoke radiating from Beelzebub growing more intense into a fiery rage. \n\"Hell has an insurmountable price waiting for those who wish to cheat death, you have proved yourself thus far but are still but flesh and blood.\" Before you stands a colossal figure of blackened bone and flame, ready to attack.',
-        img: 'test.png',
+        img: 'boss.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Continue', 'None', 'Health', 6, 0, 99, [0,0,0,0,-1]],   
@@ -3065,7 +3079,7 @@ const boss_chapters = [
         id: 4,
         type: 'Boss', 
         prompt: 'Beelzebub collapses in exhaustion, grinning a sinister smile for you have fought well for your last cling to the land of the living. \"Until next time, old friend.\" You awaken to a ticket collector tapping on your shoulder, awakening you from a deep slumber. \"Get up! Next train departs at the hour and I haven\'t all day!\" As you step out onto the platform, it is daylight.',
-        img: 'test.png',
+        img: 'victory.png',
         min_level: 0.00, 
         max_level: 1.00, 
         action_a_prompt: ['Continue', 'None', 'Health', 6, 0, 99, [0,0,0,0,-1]],   
